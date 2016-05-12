@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        {% block title %}{% endblock %}
+
+        <style>
+            html, body {
+                height: 100%;
+                margin: 0;
+                background-color: #F3F3F3;
+                min-height: 300px;
+                min-width: 600px;
+            }
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+            }
+            li {
+                display: inline;
+                float: : left;
+                cursor: pointer;
+            }
+            .navBarLogo {
+                height: 40px;
+                line-height: 60px;
+                vertical-align: middle;
+                margin-left: 16%;
+            }
+            .navBarHover a:hover {
+                background-color: #FF3333;
+            }
+            .navBarHover {
+                width: 80px;
+                vertical-align: middle;
+            }
+            .navBarLink {
+                color: #FFFFFF;
+                font-size: 100%;
+                font-family: Comic Sans MS;
+                text-decoration: none;
+                float: right;
+                padding: 8px 15px;
+            }
+            hr {
+                border-top: 2px solid #FF4D4D;
+            }
+        </style>
+        {% block newStyle %}{% endblock %}
+
+        <ul style="width:auto; height:40px; background-color:#f25a5a;">
+            <li class="navBarLogo" style:""><a style="text-decoration: none;" href="/"><img 
+                src="http://etc.usf.edu/presentations/extras/letters/fridge_magnets/white/32/v-400.png"
+                height="30px">
+            </img></a></li>
+            <li class="navBarHover"><a class="navBarLink" style="margin-right: 16%;" href="/">Profile</a></li>
+            <li class="navBarHover"><a class="navBarLink" href="/">My Items</a></li>
+            <li class="navBarHover"><a class="navBarLink" href="/">Matches</a></li>
+        </ul>
+    </head>
+    
+    <body>
+        <div style="margin: 12px 15% 0 15%;">
+
+            {% block content %}{% endblock %}
+
+            <hr>
+            <footer class="footer">
+                <p style="color:#FF4D4D">&nbsp &copy; 2016 Alex Geoffrey</p>
+            </footer>
+        </div>
+    </body>
+</html>

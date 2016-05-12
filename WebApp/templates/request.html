@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+<title>SafeRide Request</title>
+<style type="text/css">
+    .container {
+        display: table;
+        width: 60%;
+        height: 60%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Form for riders -->
+<form id="testform" role="form" action="/buttonPress" method="post">
+    <h3 class="text-muted" style="text-align: center;">Request Info</h3>
+    <div class="form-group">
+     {% if errors.name %} <span style="color:red">{{errors.name}}</span></br> {% endif %}
+      <label for="name">Name:</label>
+      <input type="text" class="form-control" name="usr" value="{{ride.name}}">
+    </div>
+    <div class="form-group">
+     {% if errors.uoid %} <span style="color:red">{{errors.uoid}}</span></br> {% endif %}
+      <label for="id">UO ID Number:</label>
+      <input type="int" class="form-control" name="id" value="{{ride.uoid}}">
+    </div>
+    <div class="form-group">
+      {% if errors.phone %} <span style="color:red">{{errors.phone}}</span></br> {% endif %}
+      <label for="phone">Phone Number: (include area code, digits only)</label>
+      <input type="int" class="form-control" name="phone" value="{{ride.phone}}" pattern="[0-9]{10}">
+    </div>
+    <div class="form-group">
+     {% if errors.pickup_addr %} <span style="color:red">{{errors.pickup_addr}}</span></br> {% endif %}
+      <label for="pick_up">Pick-Up Location:</label>
+      <input type="text" class="form-control" name="pick_up" value="{{ride.pickup_addr}}">
+    </div>
+    <div class="form-group">
+     {% if errors.dropoff_addr %} <span style="color:red">{{errors.dropoff_addr}}</span></br> {% endif %}
+      <label for="drop_off">Drop-Off Location:</label>
+      <input type="text" class="form-control" name="drop_off" value="{{ride.dropoff_addr}}">
+    </div>
+    <div class="form-group">
+        <label for="count">Hour of Pick-Up:</label>
+        <select id="hours" class="form-control" name="hours">
+        </select>
+        <script type="text/javascript">
+            // To add current day's time options
+            var date = new Date()
+            var day = date.getDay();
+            var select = document.getElementById('hours');
+
+            // Add universal hours
+            for (var i = 7; i < 12; i++) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = i + " PM";
+                select.appendChild(opt);
+            }
+            // Add 12AM ("PM" is in the loop)
+            var opt = document.createElement('option');
+            opt.value = 12;
+            opt.innerHTML = "12 AM";
+            select.appendChild(opt);
+            // If it is the weekend
+            if (day > 5) {
+                for (var i = 1; i < 3; i++) {
+                    var opt = document.createElement('option');
+                    opt.value = i;
+                    opt.innerHTML = i + " AM";
+                    select.appendChild(opt);
+                } 
+            }
+        </script>
+    </div>
+    <div class="form-group">
+        <label for="count">Minute of Pick-Up:</label>
+            <select class="form-control" name="minute">
+                <option value=00>00</option>
+                <option value=05>05</option>
+                <option value=10>10</option>
+                <option value=15>15</option>
+                <option value=20>20</option>
+                <option value=25>25</option>
+                <option value=30>30</option>
+                <option value=35>35</option>
+                <option value=40>40</option>
+                <option value=45>45</option>
+                <option value=50>50</option>
+                <option value=55>55</option>
+            </select>
+    </div>
+{% if errors.group_size %} <span style="color:red">{{errors.group_size}}</span></br> {% endif %}
+    <div class="form-group">
+        <label for="count">How Many Riders? (Choose One)</label>
+            <select class="form-control" name="riders">
+                <option value=1>Just Me</option>
+                <option value=2>A Friend and Me</option>
+                <option value=3>Two Friends and Me</option>
+            </select>
+    </div>
+    <div class="form-group">
+        <label for="spec">Special Requests:</label>
+        <textarea class="form-control" rows="3" name="spec" placeholder="Bikes, handicapped, etc.">{{ride.special}}</textarea>
+    </div>
+    <div class="form-group">
+        <div class="text-center">
+            <button type="submit" form="testform" class="btn btn-success btn-lg">Submit</button>
+        </div>
+    </div>
+</form>
+<!-- end of form -->
+{% endblock %}

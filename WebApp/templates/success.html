@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Success!</title>
+<script type="text/javascript">
+// Redirection function, to main page
+    setTimeout(
+        function() {window.location.href = "http://localhost:5000/";}, 
+        3000
+        );
+</script>
+{% endblock %}
+
+{% block content %}
+<div id="box">
+    <div id="boxInside">
+        <p class="extraSpace">Request Submitted!</p>
+        <p>You will be redirected shortly...</p>
+    </div>
+</div>
+{% endblock %}
