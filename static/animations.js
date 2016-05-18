@@ -1,9 +1,13 @@
 // animate.js
 
-var hasSlid = false;
+var hasSlid = 0;
 
 function createProfileAnimation() {
-	if (hasSlid == false) {
+	if (hasSlid == 1) {
+		// Do nothing
+	}
+	else if (hasSlid == 0) {
+		hasSlid = 1; //Animation in progress
 		var sliderBox = document.getElementById("slider");
 		var button = document.getElementById("signUp");
 		var pos = 13;
@@ -28,9 +32,10 @@ function createProfileAnimation() {
 				sliderBox.style.left = pos/3 + '%';
 			}
 		}
-		hasSlid = true;
+		hasSlid = 2;
 	}
 	else {
+		hasSlid = 1; //Animation in progress
 		var sliderBox = document.getElementById("slider");
 		var button = document.getElementById("signUp");
 		var pos = 280;
@@ -55,7 +60,7 @@ function createProfileAnimation() {
 				sliderBox.style.left = pos/3 + '%';
 			}
 		}
-		hasSlid = false;
+		hasSlid = 0;
 	}
 }
 

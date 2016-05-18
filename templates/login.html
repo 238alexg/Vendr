@@ -11,15 +11,7 @@
 
 {% block newStyle %}
 <style>
-	.box {
-        display: table;
-        width: 100%;
-        height: 80vh;
-        background-color: #FFFFFF;
-        border-radius: 15px;
-        margin-bottom: 12px;
-        position: relative;
-    }
+	
     #boxInside {
         display: table-cell;
         text-align: center;
@@ -32,13 +24,13 @@
         font-size: 350%;
         color: #FF4D4D;
         text-decoration: none;
-        font-family: Arial Black;
+        font-family: Arial;
     }
     .sliderText {
     	font-weight: bold;
         font-size: 350%;
         color: #FFFFFF;
-        font-family: Arial Black;
+        font-family: Arial;
     }
     .button {
         height: 90px;
@@ -52,14 +44,15 @@
     	border: 1px solid #FF4D4D;
     	border-radius: 15px;
     	width: 95%;
+    	min-height: 75%;
+    	height: 5%;
     	left: 5%;
-    	height: 75%;
     	bottom: 12.5%;
     	z-index: -1;
     }
     .remMe {
     	display: inline;
-    	font-family: Arial Black;
+    	font-family: Arial;
     	font-size: 16px;
     	color: #FF4D4D;
     }
@@ -97,41 +90,56 @@
 {% block content %}
 <div class="box">
     <div id="boxInside">
-    	<form action="">
-	    	<div id="slider" style="background-color: #FF4D4D;" class="slideForm">
-		        <p class="sliderText">About <br> You</p>
-	    		<input type="text" class="form-control" name="nickname" placeholder="nickname">
-	    		<input type="text" class="form-control" name="interest" placeholder="interested in">
-	    	</div>
-	    	<div class="slideForm">
-	    	</div>
+    	<form action="/createAccount" method="post" id="createAccount">
+	    	
 	    	<br><br>
 	        <p class="extraSpace">Sign Up</p>
 	        <br><br>
 	        <div>
-	        	<input type="text" class="form-control" name="userID" placeholder="email">
+	        	<input type="text" class="form-control" name="email" placeholder="email">
 	        	<br>
-	        	<input type="password" class="form-control" name="userID" placeholder="password">
+	        	<input type="password" class="form-control" name="password" placeholder="password">
 	        	<br>
-	        	<input type="password" class="form-control" name="userID" placeholder="confirm password">
+	        	<input type="password" class="form-control" name="confirmPass" placeholder="confirm password">
 	        	<br>
-	        	<button id="signUp" type ="button">></button>
+	        	<button id="signUp" type="button" value="signUp">></button>
     		</div>
+
+            <div id="slider" style="background-color: #FF4D4D;" class="slideForm">
+                <p class="sliderText">About <br> You</p>
+                <input id="nick" type="text" class="form-control" name="nickname" placeholder="nickname">
+                <input type="text" class="form-control" name="interest" placeholder="interested in">
+                <br><br>
+                <button form="createAccount" name="completeSignUp" style="background-color:#FFFFFF; color:#F25A5A" type ="submit">Sign Up</button>
+            </div>
+            <div class="slideForm">
+            </div>
+
     	</form>
     </div>
     <div id="boxInside" style="z-index:0;">
     	<br><br>
         <p class="extraSpace">Login</p>
-        <br><br>
+        <br><p style="color:red;">
+            {% if error > 0 %}
+                {% if error == 1 %}
+                    Email not valid!
+                {% else %}
+                    Incorrect password!
+                {% endif %}
+            {% else %}
+                &nbsp
+            {% endif %}
+        </p>
         <div>
-	        <form action="">
-	        	<input type="text" class="form-control" name="userID" placeholder="email">
+	        <form id="login" action="" method="post">
+	        	<input id="email" type="text" class="form-control" name="logEmail" placeholder="email">
 	        	<br>
-	        	<input type="password" class="form-control" name="userID" placeholder="password">
+	        	<input type="password" class="form-control" name="logPass" placeholder="password">
 	        	<br>
 	        	<input type="checkbox" name="remember" style="font-family: Arial Black;" checked><p class="remMe">&nbsp Remember Me
 	        	<br><br>
-	        	<button>></button>
+	        	<button form="login" id="loginButton" value="loginButton" type="submit">></button>
 	        </form>
     	</div>
     </div>
