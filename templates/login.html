@@ -94,12 +94,22 @@
 	    	
 	    	<br><br>
 	        <p class="extraSpace">Sign Up</p>
-	        <br><br>
 	        <div>
+                <p style="color:red;">
+                    {% if 2 in error %}
+                        Email requires this format: me@email.com
+                    {% elif 5 in error %}
+                        Passwords must be ≥ 7 characters!
+                    {% elif 1 in error %}
+                        Passwords do not match!
+                    {% else %}
+                        &nbsp
+                    {% endif %}
+                </p>
 	        	<input type="text" class="form-control" name="email" placeholder="email">
 	        	<br>
 	        	<input type="password" class="form-control" name="password" placeholder="password">
-	        	<br>
+                <br>
 	        	<input type="password" class="form-control" name="confirmPass" placeholder="confirm password">
 	        	<br>
 	        	<button id="signUp" type="button" value="signUp">></button>
@@ -121,12 +131,10 @@
     	<br><br>
         <p class="extraSpace">Login</p>
         <br><p style="color:red;">
-            {% if error > 0 %}
-                {% if error == 1 %}
-                    Email not valid!
-                {% else %}
-                    Incorrect password!
-                {% endif %}
+            {% if 3 in error %}
+                Email not valid!
+            {% elif 4 in error %}
+                Incorrect password!
             {% else %}
                 &nbsp
             {% endif %}
@@ -134,7 +142,7 @@
         <div>
 	        <form id="login" action="" method="post">
 	        	<input id="email" type="text" class="form-control" name="logEmail" placeholder="email">
-	        	<br>
+                <br>
 	        	<input type="password" class="form-control" name="logPass" placeholder="password">
 	        	<br>
 	        	<input type="checkbox" name="remember" style="font-family: Arial Black;" checked><p class="remMe">&nbsp Remember Me

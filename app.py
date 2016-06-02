@@ -2,11 +2,14 @@
 
 from flask import Flask, render_template, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
-from flask.ext.login import LoginManager
+from flask.ext.login import LoginManager, login_user
 from datetime import datetime
 import uuid
 
 app = Flask(__name__)
+
+app.secret_key = "secrets secrets are no fun"
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 db = SQLAlchemy(app)
 db.init_app(app)
@@ -15,55 +18,58 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(id=user_id))
+    return User.query.get(int(user_id))
 
 login_manager.setup_app(app)
 
+
+
 @app.route("/", methods=['GET','POST'])
 def login():
-    error = 0 #render_template with param error = error in future
+    error = [] #render_template with param error = error in future
     if (request.method == 'POST'):
         print("BUTTON PRESSED")
 
         logEmail = request.form['logEmail']
         logPass = request.form['logPass']
 
-        print("email",logEmail,"password",logPass)
-
-        #remember = request.form['remember']
-        #print(remember)
-        
         user = User.query.filter_by(email=logEmail).first()
         
         if (user == None):
-            error = 1
+            error.append(3)
             print("Email not found")
         elif (logPass != user.password):
-            error = 2
+            error.append(4)
             print("Incorrect password")
         # User logs in with correct credentials
         else:
-            print("You were logged in")
-            try:
-                # login_user(user)
+            # Remember user if remember is checked
+            if (request.form.get('remember')):
+                print("REMEMBER LOG IN")
+                login_user(user, remember = True)
+            else:
+                print("NO REMEMBER LOG IN")
+                login_user(user)
                 # next = flask.request.args.get('next')
-                return render_template('index.html', nickname=user.nickname, interests=user.interests)
-            except BaseException as e:
-                print (e)
-                
-    return render_template('login.html', error = error)
+            return render_template('index.html', nickname=user.nickname, interests=user.interests)
 
+    return render_template('login.html', error = error)
 
 @app.route('/logout')
 def logout():
     logout_user()
-    flash('You were logged out')
+    print('You were logged out')
     return render_template('index.html')
 
 @app.route("/createAccount", methods=['POST'])
 def createProfile():
+    
+    error = []
+
+    # Get all signup form fields
     if (request.method == 'POST'):
         email = request.form['email']
         password = request.form['password']
@@ -71,19 +77,27 @@ def createProfile():
         nickname = request.form['nickname']
         interests = request.form['interest']
 
-        print('email:',email,'pass:',password,'confirmPass:',confirmPass,'nickname',nickname)
+        # If password length is < 7, error
+        if (len(password) < 7):
+            error.append(5)
 
-        try:
+        # If password fields don't match, error
+        elif (password != confirmPass):
+            error.append(1)
+
+        # If email not in correct format, error
+        if ('@' not in email) | ('.' not in email):
+            error.append(2)
+
+        # If any errors thrown, render login with errors
+        if error != []:
+            return render_template('login.html', error = error)
+        # Else add user to database
+        else:
             newUser = User(email, nickname, password, interests)
             db.session.add(newUser)
             db.session.commit()
-        except BaseException as e:
-            print (e)
-
-        # DEBUG: Print new entry
-        
-    return render_template('createAccount.html', nickname=nickname, interests=interests)
-
+            return render_template('createAccount.html', nickname=nickname, interests=interests)
 
 
 class User(db.Model):
