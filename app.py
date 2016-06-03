@@ -2,7 +2,7 @@
 
 from flask import Flask, render_template, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
-from flask.ext.login import LoginManager, login_user
+from flask.ext.login import LoginManager, login_user, login_required
 from datetime import datetime
 import uuid
 
@@ -18,7 +18,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -26,6 +25,12 @@ def load_user(user_id):
 login_manager.setup_app(app)
 
 
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    print("You were logged out")
+    return redirect('/login')
 
 @app.route("/", methods=['GET','POST'])
 def login():
@@ -57,12 +62,6 @@ def login():
             return render_template('index.html', nickname=user.nickname, interests=user.interests)
 
     return render_template('login.html', error = error)
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    print('You were logged out')
-    return render_template('index.html')
 
 @app.route("/createAccount", methods=['POST'])
 def createProfile():
@@ -99,6 +98,11 @@ def createProfile():
             db.session.commit()
             return render_template('createAccount.html', nickname=nickname, interests=interests)
 
+
+@app.route("/profile", methods=['GET'])
+@login_required
+def profile():
+    return render_template('profile.html')
 
 class User(db.Model):
     __tablename__ = 'User'
