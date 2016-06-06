@@ -3,7 +3,7 @@
     
     <head>
         {% block title %}{% endblock %}
-
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
         <style>
             html, body {
                 height: 100%;
@@ -12,21 +12,22 @@
                 min-height: 100px;
                 min-width: 800px;
             }
-            ul {
+            .navList {
                 list-style-type: none;
                 margin: 0;
                 padding: 0;
-            }
-            li {
-                display: inline;
-                float: : left;
-                cursor: pointer;
+                width:auto; 
+                height:40px; 
+                background-color:#f25a5a;
             }
             .navBarLogo {
                 height: 40px;
                 line-height: 60px;
                 vertical-align: middle;
                 margin-left: 16%;
+                display: inline;
+                float: : left;
+                cursor: pointer;
             }
             .navBarHover a:hover {
                 background-color: #FF3333;
@@ -34,6 +35,9 @@
             .navBarHover {
                 width: 80px;
                 vertical-align: middle;
+                display: inline;
+                float: : left;
+                cursor: pointer;
             }
             .navBarLink {
                 color: #FFFFFF;
@@ -58,7 +62,7 @@
         </style>
         {% block newStyle %}{% endblock %}
 
-        <ul style="width:auto; height:40px; background-color:#f25a5a;">
+        <ul class="navList">
             <li class="navBarLogo" style:""><a style="text-decoration: none;" href="/"><img 
                 src="http://etc.usf.edu/presentations/extras/letters/fridge_magnets/white/32/v-400.png"
                 height="30px">

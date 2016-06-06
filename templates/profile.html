@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
+<script type="text/javascript" src="static/profileButtons.js"></script>
 <title>{{ current_user.nickname }}</title>
 {% endblock %}
 
@@ -11,8 +12,16 @@
         font-family: Arial;
         width: 100%;
         padding: 0px 6px;
+        table-layout: fixed;
     }
-    .titleBar {
+    /* Entire tile */
+    .tile {
+    	width: 100%;
+    	vertical-align: top;
+    	padding: 5px 10px 5px 10px;
+    }
+    /* Text for each bar category */
+    .categoryText {
     	color: #FFFFFF;
         font-size: 120%;
         font-family: Arial;
@@ -20,11 +29,15 @@
         float: left;
         padding: 9px 15px;
     }
-    .tile {
-    	vertical-align: top;
-    	width: 40%;
-    	padding: 7px 4px;
+    /* Red bar of tiles */
+    .tileBar {
+    	list-style-type: none;
+        margin: 0px;
+        padding: 0px;
+    	height: 40px;
+    	background-color: #f25a5a;
     }
+    /* Add button styling */
     .add {
 		color: #FFFFFF;
         font-size: 220%;
@@ -33,48 +46,72 @@
         float: right;
         padding: 0px 15px;
     }
+    /* To get rid of excess padding in lists */
+    ul {
+    	-webkit-padding-start: 0;
+    	-webkit-margin-before: 0;
+    	-webkit-margin-after: 0;
+    }
+    li {
+    	display: inline;
+        float: : left;
+    }
+    /* Light red list styling */
     .blockDropdown {
-    	background-color:#FFF3F3; 
-    	padding:5px 10px; 
+    	background-color:#FFF3F3;
+    	height: 100%; 
     	text-align:left;
+    	font-size: 130%;
+    	position: relative;
+    	max-height: 300px;
+    }
+    /* Actual lists in blockDropdowns */
+    .lists {
+    	height: 150px;
+    	padding: 10px 0px 20px 20px;
+    	list-style-type: none;
+    	width:inherit;
+    	overflow: auto;
+    }
+    /*  */
+    .editable {
+        background: #FFFFFF;
+        border: 1px #FFF3F3;
+        border-color: #f25a5a;
+        box-shadow: 0 0 10px #f25a5a;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="box">
+	<h1>Profile</h1>
 	<table id="boxInside">
 		<tr>
 			<td class="tile">
-				<ul style="width:auto; height:40px; background-color:#f25a5a;">
-		            <li class="navBarHover"><a class="titleBar">About Me</a></li>
-		            <li class="navBarHover"><a class="add">+</a></li>
+				<ul class="tileBar">
+		            <li class="navBarHover"><a class="categoryText">About Me</a></li>
+		            <li class="navBarHover"><a class="add" id="editProf">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">
-			        <table style="width:100%">
-			        	<tr>
-			        		<td>Nickname: </td>
-			        		<td style="text-align:right">{{ current_user.nickname }}</td>
-			        	</tr>
-			        	<tr>
-				        	<td>Email: </td>
-				        	<td style="text-align:right">{{ current_user.email }}</td>
-				        </tr>
-				        <tr>
-				        	<td>Interests: </td>
-				        	<td style="text-align:right">{{ current_user.interests }}</td>
-				        </tr>
-				    </table>
+			        <ul class="lists">
+			        	<li>Nickname:</li><br>
+			        	<li>&nbsp<span id="nickname" class="editInfo">{{ current_user.nickname }}</span></li><br>
+			        	<li>Email:</li><br>
+			        	<li>&nbsp<span id="email" class="editInfo">{{ current_user.email }}</span></li><br>
+			        	<li>Interests:</li><br>
+			        	<li>&nbsp<span id="interests" class="editInfo">{{ current_user.interests }}</span></li><br>
+				    </ul>
 		        </div>
 			</td>
 			<td class="tile">
-				<ul style="width:auto; height:40px; background-color:#f25a5a;">
-		            <li class="navBarHover"><a class="titleBar">My Items</a></li>
-		            <li class="navBarHover"><a class="add">+</a></li>
+				<ul class="tileBar">
+		            <li class="navBarHover"><a class="categoryText">My Items</a></li>
+		            <li class="navBarHover"><a class="add" id="editProf">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">
-			        <ul style="width:100%">
-			        	{% for item in ["socks","shoes","pants","hat","shirt","drums"] %}
+			        <ul class="lists">
+			        	{% for item in ["socks","shoes","pants","hat","shirt","drums","lets","keep","this","list","going","drums","lets","keep","this","list","going"] %}
 			        		<li> {{item}} </li><br>
 			        	{% endfor %}
 				    </ul>
@@ -83,12 +120,12 @@
 		</tr>
 		<tr>
 			<td class="tile">
-				<ul style="width:auto; height:40px; background-color:#f25a5a;">
-		            <li class="navBarHover"><a class="titleBar">Friends</a></li>
+				<ul class="tileBar">
+		            <li class="navBarHover"><a class="categoryText">Friends</a></li>
 		            <li class="navBarHover"><a class="add">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">
-			        <ul style="width:100%">
+			        <ul class="lists">
 			        	{% for item in ["Paul","Sarah","Jim","Toast","Roger","Drums"] %}
 			        		<li> {{item}} </li><br>
 			        	{% endfor %}
@@ -96,12 +133,12 @@
 			    </div>
 			</td>
 			<td class="tile">
-				<ul style="width:auto; height:40px; background-color:#f25a5a;">
-		            <li class="navBarHover"><a class="titleBar">Matches</a></li>
+				<ul class="tileBar">
+		            <li class="navBarHover"><a class="categoryText">Matches</a></li>
 		            <li class="navBarHover"><a class="add">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">
-			        <ul style="width:100%">
+			        <ul class="lists">
 			        	{% for item in ["Paul","Sarah","Jim","Toast","Roger","Drums"] %}
 			        		<li> {{item}} </li><br>
 			        	{% endfor %}
@@ -109,5 +146,6 @@
 			    </div>
 			</td>
 		</tr>
+	</table>
 </div>
 {% endblock %}

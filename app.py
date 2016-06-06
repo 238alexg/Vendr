@@ -143,6 +143,20 @@ class User(db.Model):
     def get_id(self):
         return self.id
 
+class Item(db.Model):
+    __tablename__ = 'Item'
+
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    tags = db.Column(db.String(80), unique=True)
+    price = db.Column(db.String(80))
+    dateCreated = db.Column(db.DateTime)
+
+    def __init__(self, name, tags, price):
+        self.name = name
+        self.tags = tags
+        self.price = price
+        self.dateCreated = datetime.utcnow()
 
 if __name__ == "__main__":
     app.run(port=5000,host="0.0.0.0")
