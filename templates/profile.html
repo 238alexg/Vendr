@@ -89,20 +89,22 @@
 	<table id="boxInside">
 		<tr>
 			<td class="tile">
-				<ul class="tileBar">
-		            <li class="navBarHover"><a class="categoryText">About Me</a></li>
-		            <li class="navBarHover"><a class="add" id="editProf">+</a></li>
-		        </ul>
-		        <div class="blockDropdown">
-			        <ul class="lists">
-			        	<li>Nickname:</li><br>
-			        	<li>&nbsp<span id="nickname" class="editInfo">{{ current_user.nickname }}</span></li><br>
-			        	<li>Email:</li><br>
-			        	<li>&nbsp<span id="email" class="editInfo">{{ current_user.email }}</span></li><br>
-			        	<li>Interests:</li><br>
-			        	<li>&nbsp<span id="interests" class="editInfo">{{ current_user.interests }}</span></li><br>
-				    </ul>
-		        </div>
+                <form name="editProfile" action="profile" onsubmit="return validateForm()" method="post">
+    				<ul class="tileBar">
+    		            <li class="navBarHover"><a class="categoryText">About Me</a></li>
+    		            <li class="navBarHover"><a href="javascript: validateForm()" class="add" id="editProf">+</a></li>
+    		        </ul>
+    		        <div class="blockDropdown">
+    			        <ul class="lists">
+    			        	<li>Nickname:</li><br>
+    			        	<li>&nbsp<span id="nickname" class="editInfo">{{ current_user.nickname }}</span></li><br>
+    			        	<li>Email:</li><br>
+    			        	<li>&nbsp<span id="email" class="editInfo">{{ current_user.email }}</span></li><br>
+    			        	<li>Interests:</li><br>
+    			        	<li>&nbsp<span id="interests" class="editInfo">{{ current_user.interests }}</span></li><br>
+    				    </ul>
+    		        </div>
+                </form>
 			</td>
 			<td class="tile">
 				<ul class="tileBar">

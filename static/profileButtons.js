@@ -7,9 +7,7 @@ function editProfInfo () {
 
 
 function updateProfileToDB () {
-	var nickname = document.getElementById("nickname").innerHTML;
-	var email = document.getElementById("email").innerHTML;
-	var interests = document.getElementById("interests").innerHTML;
+	
 
 	errors = [false,false,false]
 
@@ -22,6 +20,52 @@ function updateProfileToDB () {
 		// Throw errors
 }
 
+// Validates profile info checking
+function validateForm() {
+	var nickname = document.getElementById("nickname").innerHTML;
+	var email = document.getElementById("email").innerHTML;
+	var interests = document.getElementById("interests").innerHTML;
+
+	console.log("Got data: " + nickname + " , " + email + " , " + interests)
+
+	errors = [null,null,null];
+
+	if (nickname == '') {
+		errors[0] = ("Must have a nickname");
+	}
+	if (email == '' || email == null) {
+		errors[1] = ("Must have an email");
+	}
+	// Check for correct email format
+	else {
+		var emailTokens = email.split("@");
+		if (emailTokens.length != 2) {
+			errors[1] = ("Email must have format me@email.com");
+		}
+		else {
+			var websiteTokens = emailTokens[1].split(".");
+			if (websiteTokens.length < 2) {
+				errors[1] = ("Email must have format me@email.com");
+			}
+			else if ( emailTokens.indexOf("") != -1 || websiteTokens.indexOf("") != -1  ) {
+				errors[1] = ("Email must have format me@email.com");
+			}
+		}
+	}
+	if (interests == '') {
+		errors[2] = ("Must have interests");
+	}
+
+	console.log("ERRORS: ")
+	for (var i = 0; i <= errors.length - 1; i++) {
+		console.log(errors[i]);
+	};
+	// Return false prevents submit
+	if (errors.indexOf("") != -1) { return false; }
+	// If form is validated and there are no errors, return true to submit
+	else { return true; }
+
+}
 
 function init() {
 	var hasClickedProf = 0;
