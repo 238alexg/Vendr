@@ -80,6 +80,16 @@
         border-color: #f25a5a;
         box-shadow: 0 0 10px #f25a5a;
     }
+    .niceLinks {
+        color: #000000;
+        text-decoration: none;
+    }
+    .noHoverChange {
+        cursor: default;
+    }
+    .noHoverChange a:hover {
+        background-color: inherit;
+    }
 </style>
 {% endblock %}
 
@@ -91,8 +101,8 @@
 			<td class="tile">
                 <form name="editProfile" action="profile" onsubmit="return validateForm()" method="post">
     				<ul class="tileBar">
-    		            <li class="navBarHover"><a class="categoryText">About Me</a></li>
-    		            <li class="navBarHover"><a href="javascript: validateForm()" class="add" id="editProf">+</a></li>
+    		            <li class="navBarHover noHoverChange"><a class="categoryText">About Me</a></li>
+    		            <li class="navBarHover"><a href="javascript: validateForm()" class="add" name="editProf" value="editProf" id="editProf">+</a></li>
     		        </ul>
     		        <div class="blockDropdown">
     			        <ul class="lists">
@@ -108,14 +118,14 @@
 			</td>
 			<td class="tile">
 				<ul class="tileBar">
-		            <li class="navBarHover"><a class="categoryText">My Items</a></li>
+		            <li class="navBarHover"><a class="categoryText" href="items">My Items</a></li>
 		            <li class="navBarHover"><a class="add" id="editProf">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for item in ["socks","shoes","pants","hat","shirt","drums","lets","keep","this","list","going","drums","lets","keep","this","list","going"] %}
-			        		<li> {{item}} </li><br>
-			        	{% endfor %}
+                        {% for item in current_user.items %}
+                            <li><a class="niceLinks" href="items/{{item.name}}"> {{item.name}} </a></li><br>
+                        {% endfor %}
 				    </ul>
 		        </div>
 			</td>
@@ -128,9 +138,9 @@
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for item in ["Paul","Sarah","Jim","Toast","Roger","Drums"] %}
-			        		<li> {{item}} </li><br>
-			        	{% endfor %}
+			        	{% for friend in current_user.friends %}
+                            <li> {{friend.nickname}} </li><br>
+                        {% endfor %}
 				    </ul>
 			    </div>
 			</td>
@@ -141,9 +151,9 @@
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for item in ["Paul","Sarah","Jim","Toast","Roger","Drums"] %}
-			        		<li> {{item}} </li><br>
-			        	{% endfor %}
+			        	{% for match in current_user.matches %}
+                            <li> {{match.nickname}} </li><br>
+                        {% endfor %}
 				    </ul>
 			    </div>
 			</td>

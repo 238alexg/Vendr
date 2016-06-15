@@ -12,8 +12,9 @@ function updateProfileToDB () {
 	errors = [false,false,false]
 
 	// Validate inputs (email format and size ok, name size ok, interest size ok)
-		$(".editInfo").toggleClass("editable");
-		$('.editInfo').attr('contenteditable','false');
+		
+	$(".editInfo").toggleClass("editable");
+	$('.editInfo').attr('contenteditable','false');
 		// Update the DB with the 3 profile input entries here
 
 	// Else display error and do not change Done button
