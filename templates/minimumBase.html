@@ -29,24 +29,6 @@
                 float: : left;
                 cursor: pointer;
             }
-            .navBarHover a:hover {
-                background-color: #FF3333;
-            }
-            .navBarHover {
-                width: 80px;
-                vertical-align: middle;
-                display: inline;
-                float: : left;
-                cursor: pointer;
-            }
-            .navBarLink {
-                color: #FFFFFF;
-                font-size: 100%;
-                font-family: Comic Sans MS;
-                text-decoration: none;
-                float: right;
-                padding: 8px 15px;
-            }
             .box {
                 display: table;
                 width: 100%;
@@ -59,19 +41,6 @@
             hr {
                 border-top: 2px solid #FF4D4D;
             }
-            /*
-                To get rid of excess padding
-                in p and list elements
-            */
-            p {
-                -webkit-margin-before: 0px;
-                -webkit-margin-after: 0px;
-            }
-            ul {
-                -webkit-padding-start: 0;
-                -webkit-margin-before: 0;
-                -webkit-margin-after: 0;
-            }
         </style>
         {% block newStyle %}{% endblock %}
 
@@ -80,9 +49,8 @@
                 src="http://etc.usf.edu/presentations/extras/letters/fridge_magnets/white/32/v-400.png"
                 height="30px">
             </img></a></li>
-            <li class="navBarHover"><a class="navBarLink" style="margin-right: 16%;" href="/profile">Profile</a></li>
-            <li class="navBarHover"><a class="navBarLink" href="/items">My Items</a></li>
-            <li class="navBarHover"><a class="navBarLink" href="/matches">Matches</a></li>
+            {% block navbar %}
+            {% endblock %}
         </ul>
     </head>
     

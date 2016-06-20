@@ -1,0 +1,35 @@
+{% extends "minimumBase.html" %}
+
+{% block title %}
+<title>Unauthorized</title>
+{% endblock %}
+
+{% block newStyle %}
+<style>
+	.extraSpace {
+		text-align: center;
+        font-weight: bold;
+        font-size: 175%;
+        color: #FF4D4D;
+        font-family: Arial;
+    }
+    .errorMessage {
+        font-size: 200%;
+    }
+    a:-webkit-any-link {
+	    color: inherit;
+	    text-decoration: none;
+	    cursor: auto;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="box">
+	<div class="extraSpace">
+		<p class="errorMessage">Unauthorized error!</p>
+		<a href="/">Back to safety!</a>
+	</div>
+	
+</div>
+{% endblock %}

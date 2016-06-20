@@ -17,7 +17,7 @@ item1 = Item("Books","Learning, fun times", "$45.00")
 item2 = Item("Ham","Food, pig", "$12.00")
 item3 = Item("Football","Sports, fun times", "$23.00")
 
-test2.items.append(item1)
+test2.appendItem(item1)
 
 me.befriend(test1)
 me.befriend(test2)
@@ -38,8 +38,8 @@ db.session.add(item1)
 db.session.add(item2)
 db.session.add(item3)
 
-me.items = [item1, item2]
-me.items.append(item3)
+me.appendItem(item1)
+me.appendItem(item3)
 
 db.session.commit()
 

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Matches</title>
+{% endblock %}
+
+{% block newStyle %}
+<style>
+    #boxInside {
+        text-align: center;
+        font-family: Arial;
+        width: 100%;
+        height: 100%;
+    }
+    .messagesContainer {
+        border: 1px solid #f25a5a;
+        position: relative;
+        height: 80%;
+        overflow: hidden;
+    }
+    .profileHeader {
+        text-align: center;
+        color: #f25a5a;
+        font-size: 200%;
+        font-family: Arial;
+        text-decoration: none;
+        float: center;
+        padding: 17px 15px 8px 15px;
+    }
+
+    .chatSidebar {
+        position: relative;
+        min-width: 100px;
+        width: 30%;
+        height: 100%;
+        max-height: 500px;
+        display: inline-block;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+    }
+    .matchChat {
+        border: 1px solid #FFFFFF;
+        background-color: #DEDEDE;
+        height: 75px;
+        width: 100%;
+        display: inline-block;
+        font-family: Arial;
+        display: block;
+    }
+    .matchChatInside {
+        padding:7px;
+        height: 60px;
+        width: 92%;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .currentChatContainer {
+        float: right;
+        position: relative;
+        height: 100%;
+        width: 70%;
+    }
+    .currentChat {
+        padding: 10px;
+        overflow: auto;
+    }
+    .chatBubble {
+        padding: 6px;
+        width: auto;
+        list-style-type: none;
+        word-break: break-all;
+        display: block;
+    }
+    .chatBubble.self {
+        text-align: right;
+    }
+    .chatBubble.other {
+        text-align: left;
+    }
+    span {
+        padding: 6px;
+    }
+    .spanSelf {
+        background-color: #F0F0F0;
+    }
+    .spanOther {
+        background-color: #FFF0F0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="box">
+	<div><p class="profileHeader">{{ current_user.nickname }}'s Matches</p></div>
+	<div class="messagesContainer">
+		<ul class="chatSidebar">
+            {% for match in current_user.matches %}
+                <li class="matchChat">
+                    <div class="matchChatInside">
+                        <p style="padding: 0 0 5px 0;"><b>{{ match.nickname }}</b></p>
+                        <p style="font-size: 85%;">{{ match.email }} and this is a really long block now so hope this inline stuff doesn't overflow!</p>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="currentChatContainer">
+            <ul class="currentChat">
+                <li class="chatBubble self">
+                    <span class="spanSelf">YOLO</span></li>
+                <li class="chatBubble other">
+                    <span class="spanOther">Hey what's up?</span></li>
+                <li class="chatBubble self">
+                    <span class="spanSelf">U kno, man. Chillin' and illin'</span></li>
+            </ul>
+        </div>
+	</div>
+</div>
+{% endblock %}

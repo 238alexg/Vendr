@@ -46,12 +46,6 @@
         float: right;
         padding: 0px 15px;
     }
-    /* To get rid of excess padding in lists */
-    ul {
-    	-webkit-padding-start: 0;
-    	-webkit-margin-before: 0;
-    	-webkit-margin-after: 0;
-    }
     li {
     	display: inline;
         float: : left;
@@ -73,12 +67,21 @@
     	width:inherit;
     	overflow: auto;
     }
-    /*  */
+    /* Editable profile text */
     .editable {
         background: #FFFFFF;
         border: 1px #FFF3F3;
         border-color: #f25a5a;
         box-shadow: 0 0 10px #f25a5a;
+    }
+    .profileHeader {
+        text-align: center;
+        color: #f25a5a;
+        font-size: 200%;
+        font-family: Arial;
+        text-decoration: none;
+        float: center;
+        padding: 17px 15px 8px 15px;
     }
     .niceLinks {
         color: #000000;
@@ -95,7 +98,7 @@
 
 {% block content %}
 <div class="box">
-	<h1>Profile</h1>
+	<p class="profileHeader">{{ current_user.nickname }}'s Profile</p>
 	<table id="boxInside">
 		<tr>
 			<td class="tile">
@@ -118,7 +121,7 @@
 			</td>
 			<td class="tile">
 				<ul class="tileBar">
-		            <li class="navBarHover"><a class="categoryText" href="items">My Items</a></li>
+		            <li class="navBarHover"><a class="categoryText" href="items">My Items ({{current_user.itemCount}})</a></li>
 		            <li class="navBarHover"><a class="add" id="editProf">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">
@@ -133,7 +136,7 @@
 		<tr>
 			<td class="tile">
 				<ul class="tileBar">
-		            <li class="navBarHover"><a class="categoryText">Friends</a></li>
+		            <li class="navBarHover"><a class="categoryText">Friends ({{ current_user.friendCount}})</a></li>
 		            <li class="navBarHover"><a class="add">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">
@@ -146,7 +149,7 @@
 			</td>
 			<td class="tile">
 				<ul class="tileBar">
-		            <li class="navBarHover"><a class="categoryText">Matches</a></li>
+		            <li class="navBarHover"><a class="categoryText">Matches ({{current_user.matchCount}})</a></li>
 		            <li class="navBarHover"><a class="add">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">

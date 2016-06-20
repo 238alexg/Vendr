@@ -33,14 +33,17 @@ def logout():
     print("Successfully logged out")
     return redirect('/')
 
+@app.errorhandler(401)
+def unauthorized_error(e):
+    return render_template('401.html'), 401
+    
 @app.route("/", methods=['GET','POST'])
 def login():
     
     print(current_user)
+    print(current_user.is_anonymous)
 
-    if (current_user.is_anonymous == False):
-        return redirect("/profile")
-    else:
+    if (current_user.is_anonymous == True):
         error = [] #render_template with param error = error in future
 
         if (request.method == 'POST'):
@@ -90,15 +93,14 @@ def login():
                     return render_template('login.html', error = error)
                 # Else add user to database
                 else:
-                    try:
-                        newUser = User(email, nickname, password, interests)
-                        db.session.add(newUser)
-                        db.session.commit()
-                        login_user(newUser)
-                        return redirect('/profile')
-                    except BaseException as e:
-                        print (e)
+                    newUser = User(email, nickname, password, interests)
+                    db.session.add(newUser)
+                    db.session.commit()
+                    login_user(newUser)
+                    return redirect('/profile')
         return render_template('login.html', error = error)
+    else:
+        return redirect("/profile")
 
 @app.route("/profile", methods=['GET','POST'])
 @login_required
@@ -120,6 +122,11 @@ match = db.Table('matches',
     db.UniqueConstraint('user_id', 'match_id', name='unique_matches')
 )
 
+@app.route("/matches", methods=['GET','POST'])
+@login_required
+def matches():
+    return render_template('matches.html')
+
 class User(db.Model):
     __tablename__ = 'User'
 
@@ -131,6 +138,9 @@ class User(db.Model):
     dateCreated = db.Column(db.DateTime)
     active = db.Column(db.Boolean)
     admin = db.Column(db.Boolean)
+    friendCount = db.Column(db.Integer)
+    matchCount = db.Column(db.Integer)
+    itemCount = db.Column(db.Integer)
     items = db.relationship('Item', backref='User', lazy='dynamic')
     friends = db.relationship('User',
                            secondary=friendship,
@@ -169,22 +179,49 @@ class User(db.Model):
         if friend not in self.friends:
             self.friends.append(friend)
             friend.friends.append(self)
+            self.updateFriendCount()
+            friend.updateFriendCount()
+            db.session.commit()
 
     def unfriend(self, friend):
         if friend in self.friends:
             self.friends.remove(friend)
             friend.friends.remove(self)
+            self.updateFriendCount()
+            friend.updateFriendCount()
+            db.session.commit()
 
     def match(self, match):
         if match not in self.matches:
             self.matches.append(match)
             match.matches.append(self)
+            self.updateMatchCount()
+            match.updateMatchCount()
+            db.session.commit()
 
     def unmatch(self, match):
         if match in self.matches:
             self.matches.remove(match)
             match.matches.remove(self)
+            self.updateMatchCount()
+            match.updateMatchCount()
+            db.session.commit()
 
+    def appendItem(self, item):
+        self.items.append(item)
+        self.updateItemCount()
+        db.session.commit()
+
+    def updateFriendCount(self):
+        self.friendCount = len(self.friends)
+
+    def updateMatchCount(self):
+        self.matchCount = len(self.matches)
+
+    def updateItemCount(self):
+        self.itemCount = len(self.items.all())
+
+# Items are things Users are selling to other Users
 class Item(db.Model):
     __tablename__ = 'Item'
 
@@ -204,6 +241,16 @@ class Item(db.Model):
     def __repr__(self):
         return "<Item(name='%s', tags='%s', price='%s', owner='%d')>" % (
             self.name, self.tags, self.price, self.owner)
+
+# Tags are relationships for item tags and user interests
+class Tag(db.Model):
+    __tablename__ = 'Tag'
+
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+
+# Match conversation, which has:
+# Match Comments as one-to-many relationship
 
 if __name__ == "__main__":
     app.run(port=5000,host="0.0.0.0")
