@@ -154,8 +154,14 @@
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for match in current_user.matches %}
-                            <li> {{match.nickname}} </li><br>
+			        	{% for conversation in current_user.conversations %}
+                            <li> 
+                                {% for member in conversation.party %}
+                                    {% if current_user.id != member.id %}
+                                        {{ member.nickname }} 
+                                    {% endif %}
+                                {% endfor %}
+                            </li><br>
                         {% endfor %}
 				    </ul>
 			    </div>

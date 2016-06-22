@@ -36,6 +36,10 @@ def logout():
 @app.errorhandler(401)
 def unauthorized_error(e):
     return render_template('401.html'), 401
+
+@app.errorhandler(500)
+def unauthorized_error(e):
+    return render_template('500.html'), 500
     
 @app.route("/", methods=['GET','POST'])
 def login():
@@ -121,11 +125,18 @@ match = db.Table('matches',
     db.Column('match_id', db.Integer, db.ForeignKey('User.id')),
     db.UniqueConstraint('user_id', 'match_id', name='unique_matches')
 )
+conversationTable = db.Table('conversations',
+    db.Column('user_id', db.Integer, db.ForeignKey('User.id')),
+    db.Column('conversation_id', db.Integer, db.ForeignKey('Conversation.id'))
+)
 
 @app.route("/matches", methods=['GET','POST'])
 @login_required
 def matches():
-    return render_template('matches.html')
+    try:
+        return render_template('matches.html')
+    except BaseException as e:
+        print e
 
 class User(db.Model):
     __tablename__ = 'User'
@@ -142,6 +153,7 @@ class User(db.Model):
     matchCount = db.Column(db.Integer)
     itemCount = db.Column(db.Integer)
     items = db.relationship('Item', backref='User', lazy='dynamic')
+    conversations = db.relationship("Conversation", secondary=conversationTable, back_populates='party')
     friends = db.relationship('User',
                            secondary=friendship,
                            primaryjoin=id==friendship.c.user_id,
@@ -195,6 +207,10 @@ class User(db.Model):
         if match not in self.matches:
             self.matches.append(match)
             match.matches.append(self)
+
+            matchConvo = Conversation()
+            matchConvo.party = [self, match]
+
             self.updateMatchCount()
             match.updateMatchCount()
             db.session.commit()
@@ -243,14 +259,44 @@ class Item(db.Model):
             self.name, self.tags, self.price, self.owner)
 
 # Tags are relationships for item tags and user interests
-class Tag(db.Model):
-    __tablename__ = 'Tag'
+# class Tag(db.Model):
+#     __tablename__ = 'Tag'
+
+# Match conversation
+class Conversation(db.Model):
+    __tablename__ = 'Conversation'
 
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
+    party = db.relationship('User', secondary=conversationTable, back_populates='conversations')
+    messages = db.relationship('Message', backref='Conversation', lazy='dynamic')
+    lastMessage = db.Column(db.String(160))
+    dateCreated = db.Column(db.DateTime)
 
-# Match conversation, which has:
-# Match Comments as one-to-many relationship
+    def __init__(self):
+        self.dateCreated = datetime.utcnow()
+
+    def newMessage(self, message):
+        self.messages.append(message)
+        self.lastMessage = message.text
+        db.session.commit()
+
+    def deleteMessage(self, message):
+        self.messages.remove(message)
+        db.session.commit()
+
+class Message(db.Model):
+    __tablename__ = 'Message'
+
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    conversation = db.Column(db.Integer, db.ForeignKey('Conversation.id'))
+    text = db.Column(db.String(160))
+    sender = db.Column(db.Integer)
+    dateCreated = db.Column(db.DateTime)
+
+    def __init__(self, text, sender):
+        self.text = text
+        self.sender = sender.id
+        self.dateCreated = datetime.utcnow()
 
 if __name__ == "__main__":
     app.run(port=5000,host="0.0.0.0")

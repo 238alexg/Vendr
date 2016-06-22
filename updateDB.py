@@ -1,6 +1,6 @@
 # update DB
 
-from app import db, User, Item
+from app import db, User, Item, Conversation, Message
 
 db.drop_all()
 db.create_all()
@@ -25,9 +25,9 @@ me.befriend(test3)
 me.befriend(test4)
 me.befriend(test5)
 
+me.match(test1)
+me.match(test2)
 me.match(test3)
-me.match(test4)
-me.match(test5)
 
 db.session.add(test1)
 db.session.add(test2)
@@ -40,6 +40,16 @@ db.session.add(item3)
 
 me.appendItem(item1)
 me.appendItem(item3)
+
+db.session.commit()
+
+conv1 = me.conversations[0]
+
+conv1.newMessage(Message("Hey what's up?",me))
+conv1.newMessage(Message("Not much, what about you?",test1))
+conv1.newMessage(Message("Just interested in that basketball you're selling",me))
+conv1.newMessage(Message("Oh sorry already sold it",test1))
+conv1.newMessage(Message("Jerk.",me))
 
 db.session.commit()
 

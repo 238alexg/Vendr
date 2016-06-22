@@ -1,8 +1,10 @@
 #test python code
 
-from app import db, User, Item
+from app import db, User, Item, Conversation, Message
 
 users = User.query.all()
 
 for user in users:
-	print (user.nickname, user.friendCount, user.matchCount, user.itemCount)
+	print (user.nickname)
+	for convo in user.conversations:
+		print (convo)
