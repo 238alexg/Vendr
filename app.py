@@ -25,6 +25,11 @@ login_manager.setup_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+#####################################################
+##################  APP ROUTES  #####################
+#####################################################
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -133,10 +138,30 @@ conversationTable = db.Table('conversations',
 @app.route("/matches", methods=['GET','POST'])
 @login_required
 def matches():
+    displayConvo = 0;
     try:
-        return render_template('matches.html')
+        if (request.method == 'POST'):
+            # To change current chat window to another match
+            if (request.form.get('index')):
+                displayConvo = int(request.form['index'])
+                return render_template('matches.html', displayConvo=displayConvo)
+            # To send a message to the current match
+            elif (request.form.get('messageSend')):
+                displayConvo = int(request.form['indexSend'])
+                messageText = request.form['messageSend']
+                currConversation = current_user.conversations[displayConvo]
+                currConversation.newMessage(Message(messageText,current_user))
+                return render_template('matches.html', displayConvo=displayConvo)
+        
+        return render_template('matches.html', displayConvo=displayConvo)
+        
     except BaseException as e:
         print e
+
+
+#####################################################
+###############  DATABASE COLUMNS  ##################
+#####################################################
 
 class User(db.Model):
     __tablename__ = 'User'
