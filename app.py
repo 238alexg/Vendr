@@ -77,7 +77,7 @@ def login():
                     else:
                         login_user(user)
                     # next = flask.request.args.get('next') ??
-                    return redirect('/profile')
+                    return redirect('/profile/' + str(current_user.id))
             # Handle sign up
             elif (request.form.get('completeSignUp')):
                 email = request.form['email']
@@ -106,19 +106,22 @@ def login():
                     db.session.add(newUser)
                     db.session.commit()
                     login_user(newUser)
-                    return redirect('/profile')
+                    return redirect('/profile/' + str(newUser.id))
         return render_template('login.html', error = error)
     else:
-        return redirect("/profile")
+        return redirect('/profile/' + str(current_user.id))
 
-@app.route("/profile", methods=['GET','POST'])
+@app.route("/profile/<int:userid>/", methods=['GET','POST'])
 @login_required
-def profile():
-    if (request.method == 'POST'):
-        # Handle change profile info
-        print(request.form.get('loginButton'))
-        print("EDIT PROFILE RECIEVED")
-    return render_template('profile.html')
+def profile(userid):
+    if (current_user.id == userid):
+        if (request.method == 'POST'):
+            # Handle change profile info
+            print(request.form.get('loginButton'))
+            print("EDIT PROFILE RECIEVED")
+        return render_template('profile.html')
+    else:
+        render_template('otherProfile.html')
 
 friendship = db.Table('friendships',
     db.Column('user_id', db.Integer, db.ForeignKey('User.id'), index=True),

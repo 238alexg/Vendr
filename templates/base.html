@@ -50,7 +50,8 @@
             .box {
                 display: table;
                 width: 100%;
-                height: 80vh;
+                top:0px;
+                bottom:50px;
                 background-color: #FFFFFF;
                 border-radius: 15px;
                 margin-bottom: 12px;
@@ -67,10 +68,13 @@
                 -webkit-margin-before: 0px;
                 -webkit-margin-after: 0px;
             }
-            ul {
+            div, ul, li {
                 -webkit-padding-start: 0;
                 -webkit-margin-before: 0;
                 -webkit-margin-after: 0;
+                padding: 0;
+                border: 0;
+                margin: 0;
             }
         </style>
         {% block newStyle %}{% endblock %}
@@ -80,8 +84,8 @@
                 src="http://etc.usf.edu/presentations/extras/letters/fridge_magnets/white/32/v-400.png"
                 height="30px">
             </img></a></li>
-            <li class="navBarHover"><a class="navBarLink" style="margin-right: 16%;" href="/profile">Profile</a></li>
-            <li class="navBarHover"><a class="navBarLink" href="/items">My Items</a></li>
+            <li class="navBarHover"><a class="navBarLink" style="margin-right: 16%;" href="/profile/{{ current_user.id }}">Profile</a></li>
+            <li class="navBarHover"><a class="navBarLink" href="/logout">My Items</a></li>
             <li class="navBarHover"><a class="navBarLink" href="/matches">Matches</a></li>
         </ul>
     </head>

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block title %}
-<script type="text/javascript" src="/static/chat.js"></script>
-<title>Matches</title>
+    <script type="text/javascript" src="/static/chat.js"></script>
+    <title>Matches</title>
 {% endblock %}
 
 {% block newStyle %}
@@ -11,12 +11,15 @@
     #boxInside {
         text-align: center;
         font-family: Arial;
+        overflow: hidden;
+        position: relative;
         width: 100%;
-        height: 100%;
     }
     .messagesContainer {
-        border: 1px solid #F25A5A;
-        height: 80%;
+        border: 2px solid #F25A5A;
+        top:0px;
+        bottom:0px;
+        height: 80vh;
     }
     .profileHeader {
         text-align: center;
@@ -24,28 +27,26 @@
         font-size: 200%;
         font-family: Arial;
         text-decoration: none;
-        float: center;
         padding: 17px 15px 8px 15px;
     }
     /* Chat sidebar with names of matches */
     .chatSidebar {
-        min-width: 100px;
         width: 29.8%;
         height: 100%;
-        max-height: 500px;
+        position: relative;
+        margin: 0;
         overflow-y: auto;
-        overflow-x: hidden;
-        border-right: 1px solid #F25A5A;
+        border-right: 2px solid #F25A5A;
         overflow: hidden;
-        float:left;
         color: #FFFFFF;
+        float: left;
     }
     .messageInput {
-        padding: 5px;
-        text-align: center;
+        height: 20px;
+        margin: 5px;
     }
     .matchChat {
-        border: 1px solid #FFFFFF;
+        border-bottom: 2px solid #FFFFFF;
         background-color: #F28080;
         height: 75px;
         width: 100%;
@@ -66,16 +67,20 @@
     }
 
     /* Messages from one match */
-    .currentChatContainer {
-        height: 100%;
-        overflow:hidden;
-        position: relative;
-    }
     .chatHeader {
         padding: 6px 0px;
         text-align: center;
         background-color: #F25A5A;
         color: #FFFFFF;
+    }
+    .currentChatContainer {
+        overflow: auto;
+        position: absolute;
+        border-bottom: 1px solid #F25A5A;
+        right: 2px;
+        left: 30%;
+        bottom: 40px;
+        top: 94px;
     }
     .currentChat {
         padding: 10px;
@@ -88,17 +93,16 @@
     }
     .dateCreated.self {
         text-align: right;
-        padding: 0 8px 0 0;
+        padding: 0 3px 0 0;
     }
     .dateCreated.other {
         text-align: left;
-        padding: 0 0 0 8px;
+        padding: 0 0 0 3px;
     }
     .chatBubble {
-        padding: 8px 8px 10px 8px;
+        padding: 1px 0 4px 0;
         width: auto;
         list-style-type: none;
-        word-break: break-all;
         display: block;
     }
     .chatBubble.self {
@@ -107,74 +111,66 @@
     .chatBubble.other {
         text-align: left;
     }
-    .spanSelf {
+    .chatSelf {
         padding: 6px 8px;
+        display: inline-block;
+        width: auto;
         background-color: #FFE0E0;
         border-radius: 10px 2px 2px 10px;
     }
-    .spanOther {
+    .chatOther {
         padding: 6px 8px;
+        display: inline-block;
+        width: auto;
         background-color: #E0E0E0;
         border-radius: 2px 10px 10px 2px;
     }
     .messageInput.send {
         position: absolute;
-        bottom: 0;
-        width: 100%;
-        text-align: left;
-    }
-    .sendMessage {
-        width: 99%;
+        overflow: hidden;
+        bottom: 5px;
+        width: 66%;
+        text-align: center;
+        /*background-color: #000000;*/
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="box">
-	<div><p class="profileHeader">{{ current_user.nickname }}'s Matches</p></div>
+	<div class="profileHeader">{{ current_user.nickname }}'s Matches</div>
 	<div class="messagesContainer">
 		<div class="chatSidebar">
             <div class="messageInput">
-                <input placeholder="Search" type="text"/>
+                <span><input placeholder="Search" type="text"/></span>
             </div>
-            <ul id="ul">
+            <ul id="ul" style="padding=0px; border=0px; bottom: 0px;">
                 {% if current_user.conversations %}
                     {% for conversation in current_user.conversations %}
+                        <form method="post" name="changeChat{{ loop.index -1 }}" id="changeChat">
                         {% if loop.index-1 == displayConvo %}
                             <li class="matchChat selected">
+                        {% else %}
+                            <li onclick="changeChat{{ loop.index -1 }}.submit();" class="matchChat">
+                        {% endif %}
                                 <div class="matchChatInside">
-                                    <p style="padding: 0 0 5px 0;"><b>
+                                    <b style="padding: 0 0 5px 0;">
                                         {% for member in conversation.party %}
                                             {% if current_user.id != member.id %}
                                                 {{ member.nickname }} 
                                             {% endif %}
                                         {% endfor %}
-                                    </b></p>
-                                    <p style="font-size: 85%;">{{ conversation.lastMessage }}</p>
+                                    </b><br/>
+                                    <span style="font-size: 85%;">{{ conversation.lastMessage }}</span>
                                 </div>
                             </li>
-                        {% else %}
-                            <form method="post" name="changeChat{{ loop.index -1 }}" id="changeChat">
-                                <li onclick="changeChat{{ loop.index -1 }}.submit();" class="matchChat">
-                                    <div class="matchChatInside">
-                                        <p style="padding: 0 0 5px 0;"><b>
-                                            {% for member in conversation.party %}
-                                                {% if current_user.id != member.id %}
-                                                    {{ member.nickname }} 
-                                                {% endif %}
-                                            {% endfor %}
-                                        </b></p>
-                                        <p style="font-size: 85%;">{{ conversation.lastMessage }}</p>
-                                    </div>
-                                </li>
-                                <input type="hidden" name="index" value="{{ loop.index -1}}">
-                            </form>
-                        {% endif %}
+                            <input type="hidden" name="index" value="{{ loop.index -1}}">
+                        </form>
                     {% endfor %}
                 {% endif %}
             </ul>
         </div>
-        <div class="currentChatContainer">
+        <div id="entireChatContainer" style="overflow: hidden; width: auto;">
             <div class="chatHeader"><b style="font-family: Arial;">
                 {% for member in current_user.conversations[displayConvo].party %}
                     {% if current_user.id != member.id %}
@@ -182,26 +178,32 @@
                     {% endif %}
                 {% endfor %}
             </b></div>
-            <ul id="currentChat" class="currentChat">
-                {% for message in current_user.conversations[displayConvo].messages %}
-                    {% if message.sender == current_user.id %}
-                        <li class="dateCreated self">{{ message.dateCreated.strftime('%Y-%M-%d') }} at {{ message.dateCreated.strftime('%r') }}</li>
-                        <li class="chatBubble self">
-                            <span class="spanSelf">{{message.text}}</span></li>
-                    {% else %}
-                        <li class="dateCreated other">{{ message.dateCreated.strftime('%Y-%M-%d') }} at {{ message.dateCreated.strftime('%r') }}</li>
-                        <li class="chatBubble other">
-                            <span class="spanOther">{{message.text}}</span></li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-            <form method="post" name="sendMessageForm" id="changeChat">
-                <div class="messageInput send">
-                    <input class="sendMessage" name="messageSend" id="messageSend" placeholder="Send message with Enter" type="text"/>
+            <div id="currentChatContainer" class="currentChatContainer">
+                <ul id="currentChat" class="currentChat">
+                    {% for message in current_user.conversations[displayConvo].messages %}
+                        {% if message.sender == current_user.id %}
+                            <li class="dateCreated self">{{ message.dateCreated.strftime('%b %d, %Y') }} at {{ message.dateCreated.strftime('%-I:%M %p') }}</li>
+                            <li class="chatBubble self">
+                                <div class="chatSelf">{{message.text}}</div></li>
+                        {% else %}
+                            <li class="dateCreated other">{{ message.dateCreated.strftime('%b %d, %Y') }} at {{ message.dateCreated.strftime('%-I:%M %p') }}</li>
+                            <li class="chatBubble other">
+                                <span class="chatOther">{{message.text}}</span></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="messageInput send">
+                <form method="post" name="sendMessageForm" id="changeChat">
+                    <input class="sendMessage" name="messageSend" id="messageSend" placeholder="Send message with Enter" style="width: 90%;" autocomplete="off" type="text"/>
                     <input name="indexSend" id="indexSend" type="hidden" value="{{ displayConvo }}"/>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
+        <script type="text/javascript">
+            var objDiv = document.getElementById("currentChatContainer");
+            objDiv.scrollTop = objDiv.scrollHeight;
+        </script>
 	</div>
 </div>
 {% endblock %}

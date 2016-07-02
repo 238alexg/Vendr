@@ -7,6 +7,7 @@ function init() {
 	for (var i = 0; i < items.length; ++i) {
 		console.log(items[i].value);
 	}
+
 }
 
 window.onload = init;
