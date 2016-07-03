@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block title %}
-    <script type="text/javascript" src="/static/chat.js"></script>
     <title>Matches</title>
 {% endblock %}
 
@@ -63,9 +62,6 @@
         height: 60px;
         width: 92%;
         display: block;
-        position: relative;
-        overflow: hidden;
-        white-space: nowrap;
         text-overflow: ellipsis;
     }
 
@@ -114,21 +110,19 @@
     .chatBubble.other {
         text-align: left;
     }
-    .chatInside {
-        padding: 6px 10px;
+    .chatSelf {
+        padding: 6px 8px;
         display: inline-block;
         width: auto;
-        max-width: 70%;
-    }
-    .chatInside.self {
         background-color: #FFE0E0;
         border-radius: 10px 2px 2px 10px;
-        text-align: left;
     }
-    .chatInside.other {
+    .chatOther {
+        padding: 6px 8px;
+        display: inline-block;
+        width: auto;
         background-color: #E0E0E0;
         border-radius: 2px 10px 10px 2px;
-        text-align: right;
     }
     .messageInput.send {
         position: absolute;
@@ -149,63 +143,32 @@
                 <span><input placeholder="Search" type="text"/></span>
             </div>
             <ul id="ul" style="padding=0px; border=0px; bottom: 0px;">
-                {% for conversation in current_user.conversations %}
-                    <form method="post" name="changeChat{{ loop.index -1 }}" id="changeChat">
-                    {% if loop.index-1 == displayConvo %}
-                        <li class="matchChat selected">
-                    {% else %}
-                        <li onclick="changeChat{{ loop.index -1 }}.submit();" class="matchChat">
-                    {% endif %}
-                            <div class="matchChatInside">
-                                <b style="padding: 0 0 5px 0;">
-                                    {% for member in conversation.party %}
-                                        {% if current_user.id != member.id %}
-                                            {{ member.nickname }} 
-                                        {% endif %}
-                                    {% endfor %}
-                                </b><br/>
-                                <span style="font-size: 85%;">{{ conversation.lastMessage }}</span>
-                            </div>
-                        </li>
-                        <input type="hidden" name="index" value="{{ loop.index -1}}">
-                    </form>
-                {% endfor %}
+            	<li class="matchChat selected">
+	        		<div class="matchChatInside">
+                        <b style="padding: 0 0 5px 0;">
+                        	Matchless?
+                        </b><br/>
+                        <span style="font-size: 85%;">Start swiping!</span>
+                    </div>
+                </li>
             </ul>
         </div>
         <div id="entireChatContainer" style="overflow: hidden; width: auto;">
             <div class="chatHeader"><b style="font-family: Arial;">
-                {% for member in current_user.conversations[displayConvo].party %}
-                    {% if current_user.id != member.id %}
-                        {{ member.nickname }} 
-                    {% endif %}
-                {% endfor %}
+            	Matchless?
             </b></div>
             <div id="currentChatContainer" class="currentChatContainer">
                 <ul id="currentChat" class="currentChat">
-                    {% for message in current_user.conversations[displayConvo].messages %}
-                        {% if message.sender == current_user.id %}
-                            <li class="dateCreated self">{{ message.dateCreated.strftime('%b %d, %Y') }} at {{ message.dateCreated.strftime('%-I:%M %p') }}</li>
-                            <li class="chatBubble self">
-                                <div class="chatInside self">{{message.text}}</div></li>
-                        {% else %}
-                            <li class="dateCreated other">{{ message.dateCreated.strftime('%b %d, %Y') }} at {{ message.dateCreated.strftime('%-I:%M %p') }}</li>
-                            <li class="chatBubble other">
-                                <span class="chatInside other">{{message.text}}</span></li>
-                        {% endif %}
-                    {% endfor %}
+                	<li class="chatBubble other">
+                        <span class="chatOther">Tired of not having matches?</span></li>
+                	<li class="chatBubble other">
+                        <span class="chatOther"><a href="/">Start swiping!</a></span></li>
                 </ul>
             </div>
             <div class="messageInput send">
-                <form method="post" name="sendMessageForm" id="changeChat">
-                    <input class="sendMessage" name="messageSend" id="messageSend" placeholder="Send message with Enter" style="width: 90%;" autocomplete="off" type="text"/>
-                    <input name="indexSend" id="indexSend" type="hidden" value="{{ displayConvo }}"/>
-                </form>
+                <input class="sendMessage" name="messageSend" id="messageSend" placeholder="Send messages once you have a match!" style="width: 90%;" autocomplete="off" type="text"/>
             </div>
         </div>
-        <script type="text/javascript">
-            var objDiv = document.getElementById("currentChatContainer");
-            objDiv.scrollTop = objDiv.scrollHeight;
-        </script>
 	</div>
 </div>
 {% endblock %}

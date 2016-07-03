@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-<script type="text/javascript" src="/static/profileButtons.js"></script>
-<title>{{ current_user.nickname }}</title>
+<title>{{ user.nickname }}</title>
 {% endblock %}
 
 {% block newStyle %}
@@ -98,36 +97,32 @@
 
 {% block content %}
 <div class="box">
-	<div class="profileHeader">{{ current_user.nickname }}'s Profile</div>
+	<div class="profileHeader">{{ user.nickname }}'s Profile</div>
 	<table id="boxInside">
 		<tr>
 			<td class="tile">
                 <form name="editProfile" action="profile" onsubmit="return validateForm()" method="post">
     				<ul class="tileBar">
-    		            <li class="navBarHover noHoverChange"><a class="categoryText">About Me</a></li>
-    		            <li class="navBarHover"><a href="javascript: validateForm()" class="add" name="editProf" value="editProf" id="editProf">+</a></li>
+    		            <li class="navBarHover noHoverChange"><a class="categoryText">About</a></li>
     		        </ul>
     		        <div class="blockDropdown">
     			        <ul class="lists">
     			        	<li>Nickname:</li><br>
-    			        	<li>&nbsp<span id="nickname" class="editInfo">{{ current_user.nickname }}</span></li><br>
-    			        	<li>Email:</li><br>
-    			        	<li>&nbsp<span id="email" class="editInfo">{{ current_user.email }}</span></li><br>
+    			        	<li>&nbsp&nbsp<span id="nickname" class="editInfo">{{ user.nickname }}</span></li><br>
     			        	<li>Interests:</li><br>
-    			        	<li>&nbsp<span id="interests" class="editInfo">{{ current_user.interests }}</span></li><br>
+    			        	<li>&nbsp&nbsp<span id="interests" class="editInfo">{{ user.interests }}</span></li><br>
     				    </ul>
     		        </div>
                 </form>
 			</td>
 			<td class="tile">
 				<ul class="tileBar">
-		            <li class="navBarHover"><a class="categoryText" href="/items">My Items ({{current_user.itemCount}})</a></li>
-		            <li class="navBarHover"><a class="add" id="editProf">+</a></li>
+		            <li class="navBarHover"><a class="categoryText" href="/items">Items ({{ user.itemCount }})</a></li>
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-                        {% for item in current_user.items %}
-                            <li><a class="niceLinks" href="/items/{{ loop.index -1 }}"> {{item.name}} </a></li><br>
+                        {% for item in user.items %}
+                            <li><a class="niceLinks" href="/items/{{item.name}}"> {{item.name}} </a></li><br>
                         {% endfor %}
 				    </ul>
 		        </div>
@@ -136,17 +131,12 @@
 		<tr>
 			<td class="tile">
 				<ul class="tileBar">
-		            <li class="navBarHover noHoverChange"><a class="categoryText">Friends ({{ current_user.friendCount}})</a></li>
-		            <li class="navBarHover"><a class="add">+</a></li>
+		            <li class="navBarHover noHoverChange"><a class="categoryText">Friends ({{ user.friendCount}})</a></li>
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for friend in current_user.friends %}
+			        	{% for friend in user.friends %}
                             <li><a class="niceLinks" href="/profile/{{ friend.id }}">
-                                {% if friend.is_active == True %}
-                                    X
-                                {% endif %}
-
                                 {{ friend.nickname }}
                             </li><br>
                         {% endfor %}
@@ -155,15 +145,14 @@
 			</td>
 			<td class="tile">
 				<ul class="tileBar">
-		            <li class="navBarHover"><a class="categoryText" href="/matches">Matches ({{current_user.matchCount}})</a></li>
-		            <li class="navBarHover"><a class="add">+</a></li>
+		            <li class="navBarHover"><a class="categoryText" href="/matches/0">Matches ({{user.matchCount}})</a></li>
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for conversation in current_user.conversations %}
+			        	{% for conversation in user.conversations %}
                             <li><a class="niceLinks" href="/matches/{{ loop.index -1 }}"> 
                                 {% for member in conversation.party %}
-                                    {% if current_user.id != member.id %}
+                                    {% if user.id != member.id %}
                                         {{ member.nickname }} 
                                     {% endif %}
                                 {% endfor %}

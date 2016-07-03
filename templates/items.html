@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <script type="text/javascript" src="/static/chat.js"></script>
+    <title>Matches</title>
+{% endblock %}
+
+{% block newStyle %}
+<style>
+    /* Entire chat page */
+    #boxInside {
+        text-align: center;
+        font-family: Arial;
+        overflow: hidden;
+        position: relative;
+        width: 100%;
+    }
+    .itemsContainer {
+        border: 2px solid #F25A5A;
+        top:0px;
+        bottom:0px;
+        height: 80vh;
+    }
+    .itemsHeader {
+        text-align: center;
+        color: #F25A5A;
+        font-size: 200%;
+        font-family: Arial;
+        text-decoration: none;
+        padding: 17px 15px 8px 15px;
+    }
+    /* Chat sidebar with names of matches */
+    .itemSidebar {
+        width: 29.8%;
+        height: 100%;
+        position: relative;
+        margin: 0;
+        overflow-y: auto;
+        border-right: 2px solid #F25A5A;
+        overflow: hidden;
+        color: #FFFFFF;
+        float: left;
+    }
+    .messageInput {
+        height: 20px;
+        margin: 5px;
+    }
+    .matchChat {
+        border-bottom: 2px solid #FFFFFF;
+        background-color: #F28080;
+        height: 75px;
+        width: 100%;
+        font-family: Arial;
+    }
+    .matchChat.selected {
+        background-color: #F25A5A;
+    }
+    li.matchChat:hover {
+        background-color: #F25A5A;
+    }
+    .itemSidebarInside {
+        padding:9px;
+        height: 60px;
+        width: 92%;
+        display: block;
+        text-overflow: ellipsis;
+    }
+
+    /* Messages from one match */
+    .selectedItemHeader {
+        padding: 6px 0px;
+        text-align: center;
+        background-color: #F25A5A;
+        color: #FFFFFF;
+    }
+    .currentChatContainer {
+        overflow: auto;
+        position: absolute;
+        right: 2px;
+        left: 30%;
+        top: 94px;
+        bottom: 0px;
+    }
+    .currentChat {
+        padding: 10px;
+        overflow: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="box">
+	<div class="itemsHeader">{{ current_user.nickname }}'s Items</div>
+	<div class="itemsContainer">
+		<div class="itemSidebar">
+            <div class="messageInput">
+                <span><input placeholder="Search" type="text"/></span>
+            </div>
+            <ul id="ul" style="padding=0px; border=0px; bottom: 0px;">
+                {% for item in current_user.items %}
+                    <form method="post" name="changeItem{{ loop.index -1 }}" id="changeItem">
+                    {% if loop.index-1 == itemNum %}
+                        <li class="matchChat selected">
+                    {% else %}
+                        <li onclick="changeItem{{ loop.index -1 }}.submit();" class="matchChat">
+                    {% endif %}
+                            <div class="itemSidebarInside">
+                                <b style="padding: 0 0 5px 0;">
+                                    {{ item.name }}
+                                </b><br/>
+                                <span style="font-size: 85%;">
+                                    {{ item.price }}
+                                </span>
+                            </div>
+                        </li>
+                        <input type="hidden" name="index" value="{{ loop.index -1}}">
+                    </form>
+                {% endfor %}
+            </ul>
+        </div>
+        <div id="itemInfoContainer" style="overflow: hidden; width: auto;">
+            <div class="selectedItemHeader"><b style="font-family: Arial;">
+                {{ current_user.items[itemNum].name }}
+            </b></div>
+            <div id="currentChatContainer" class="currentChatContainer">
+                <ul id="currentChat" class="currentChat">
+                    {{ current_user.items[itemNum].price }}
+                </ul>
+            </div>
+        </div>
+	</div>
+</div>
+{% endblock %}

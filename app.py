@@ -34,6 +34,8 @@ def load_user(user_id):
 @login_required
 def logout():
     print(current_user.nickname + " being logged out")
+    current_user.active = False
+    db.session.commit()
     logout_user()
     print("Successfully logged out")
     return redirect('/')
@@ -48,10 +50,6 @@ def unauthorized_error(e):
     
 @app.route("/", methods=['GET','POST'])
 def login():
-    
-    print(current_user)
-    print(current_user.is_anonymous)
-
     if (current_user.is_anonymous == True):
         error = [] #render_template with param error = error in future
 
@@ -76,6 +74,8 @@ def login():
                         login_user(user, remember = True)
                     else:
                         login_user(user)
+                        user.active = True
+                        db.session.commit()
                     # next = flask.request.args.get('next') ??
                     return redirect('/profile/' + str(current_user.id))
             # Handle sign up
@@ -114,14 +114,64 @@ def login():
 @app.route("/profile/<int:userid>/", methods=['GET','POST'])
 @login_required
 def profile(userid):
-    if (current_user.id == userid):
-        if (request.method == 'POST'):
-            # Handle change profile info
-            print(request.form.get('loginButton'))
-            print("EDIT PROFILE RECIEVED")
-        return render_template('profile.html')
+    try:
+        if (current_user.id == userid):
+            if (request.method == 'POST'):
+                # Handle change profile info
+                print(request.form.get('loginButton'))
+                print("EDIT PROFILE RECIEVED")
+            return render_template('profile.html')
+        else:
+            print "GOT HERE BRUH!"
+            user = User.query.filter_by(id=userid).first()
+            return render_template('otherProfile.html', user=user)
+    except BaseException as e:
+        print e
+
+@app.route("/matches", methods=['GET','POST'])
+@app.route("/matches/<int:displayConvo>/", methods=['GET','POST'])
+@login_required
+def matches(displayConvo = 0):
+    if (request.method == 'POST'):
+        # To change current chat window to another match
+        if (request.form.get('index')):
+            displayConvo = int(request.form['index'])
+            return render_template('matches.html', displayConvo=displayConvo)
+        # To send a message to the current match
+        elif (request.form.get('messageSend')):
+            displayConvo = int(request.form['indexSend'])
+            messageText = request.form['messageSend']
+            currConversation = current_user.conversations[displayConvo]
+            currConversation.newMessage(Message(messageText,current_user))
+            return redirect('matches/' + str(displayConvo))
+    if (current_user.matchCount == 0):
+        return render_template('noMatches.html')
     else:
-        render_template('otherProfile.html')
+        return render_template('matches.html', displayConvo=displayConvo)
+
+
+@app.route("/items", methods=['GET','POST'])
+@app.route("/items/<int:itemNum>", methods=['GET','POST'])
+@login_required
+def items(itemNum = 0):
+    try:
+        if (request.method == 'POST'):
+            # To change current chat window to another match
+            if (request.form.get('index')):
+                itemNum = int(request.form['index'])
+                return render_template('items.html', itemNum=itemNum)
+        if (current_user.itemCount == 0):
+            # !!!        ~~~~  CHANGE REQUIRED  ~~~~~        !!!
+            # CHANGE THIS TO NOITEMS.HTML
+            return render_template('noMatches.html')
+        else:
+            return render_template('items.html', itemNum=itemNum)
+    except BaseException as e:
+        print e
+
+#####################################################
+###############  DATABASE COLUMNS  ##################
+#####################################################
 
 friendship = db.Table('friendships',
     db.Column('user_id', db.Integer, db.ForeignKey('User.id'), index=True),
@@ -137,34 +187,6 @@ conversationTable = db.Table('conversations',
     db.Column('user_id', db.Integer, db.ForeignKey('User.id')),
     db.Column('conversation_id', db.Integer, db.ForeignKey('Conversation.id'))
 )
-
-@app.route("/matches", methods=['GET','POST'])
-@login_required
-def matches():
-    displayConvo = 0;
-    try:
-        if (request.method == 'POST'):
-            # To change current chat window to another match
-            if (request.form.get('index')):
-                displayConvo = int(request.form['index'])
-                return render_template('matches.html', displayConvo=displayConvo)
-            # To send a message to the current match
-            elif (request.form.get('messageSend')):
-                displayConvo = int(request.form['indexSend'])
-                messageText = request.form['messageSend']
-                currConversation = current_user.conversations[displayConvo]
-                currConversation.newMessage(Message(messageText,current_user))
-                return render_template('matches.html', displayConvo=displayConvo)
-        
-        return render_template('matches.html', displayConvo=displayConvo)
-        
-    except BaseException as e:
-        print e
-
-
-#####################################################
-###############  DATABASE COLUMNS  ##################
-#####################################################
 
 class User(db.Model):
     __tablename__ = 'User'
