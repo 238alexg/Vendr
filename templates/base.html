@@ -31,6 +31,7 @@
             }
             .navBarHover a:hover {
                 background-color: #FF3333;
+                text-decoration: none;
             }
             .navBarHover {
                 width: 80px;
@@ -48,8 +49,6 @@
                 padding: 8px 15px;
             }
             .box {
-                display: table;
-                width: 100%;
                 background-color: #FFFFFF;
                 border-radius: 15px;
                 margin-bottom: 12px;
@@ -73,6 +72,13 @@
                 padding: 0;
                 border: 0;
                 margin: 0;
+            }
+            a {
+                text-decoration: none;
+                color: #FFFFFF;
+            }
+            a:hover {
+                text-decoration: underline;
             }
         </style>
         {% block newStyle %}{% endblock %}

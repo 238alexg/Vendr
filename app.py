@@ -131,24 +131,23 @@ def profile(userid):
 @app.route("/matches", methods=['GET','POST'])
 @app.route("/matches/<int:displayConvo>/", methods=['GET','POST'])
 @login_required
-def matches(displayConvo = 0):
-    if (request.method == 'POST'):
-        # To change current chat window to another match
-        if (request.form.get('index')):
-            displayConvo = int(request.form['index'])
-            return render_template('matches.html', displayConvo=displayConvo)
-        # To send a message to the current match
-        elif (request.form.get('messageSend')):
-            displayConvo = int(request.form['indexSend'])
-            messageText = request.form['messageSend']
-            currConversation = current_user.conversations[displayConvo]
-            currConversation.newMessage(Message(messageText,current_user))
-            return redirect('matches/' + str(displayConvo))
-    if (current_user.matchCount == 0):
-        return render_template('noMatches.html')
-    else:
+def matches(displayConvo = 0): 
+    if (current_user.matchCount != 0):
+        if (request.method == 'POST'):
+            # To change current chat window to another match
+            if (request.form.get('index')):
+                displayConvo = int(request.form['index'])
+                return render_template('matches.html', displayConvo=displayConvo)
+            # To send a message to the current match
+            elif (request.form.get('messageSend')):
+                displayConvo = int(request.form['indexSend'])
+                messageText = request.form['messageSend']
+                currMatch = current_user.matches[displayConvo]
+                currMatch.newMessage(Message(messageText,current_user))
+                return redirect('matches/' + str(displayConvo))
         return render_template('matches.html', displayConvo=displayConvo)
-
+    else:
+        return render_template('noMatches.html')
 
 @app.route("/items", methods=['GET','POST'])
 @app.route("/items/<int:itemNum>", methods=['GET','POST'])
@@ -169,6 +168,7 @@ def items(itemNum = 0):
     except BaseException as e:
         print e
 
+
 #####################################################
 ###############  DATABASE COLUMNS  ##################
 #####################################################
@@ -178,14 +178,13 @@ friendship = db.Table('friendships',
     db.Column('friend_id', db.Integer, db.ForeignKey('User.id')),
     db.UniqueConstraint('user_id', 'friend_id', name='unique_friendships')
 )
-match = db.Table('matches',
-    db.Column('user_id', db.Integer, db.ForeignKey('User.id'), index=True),
-    db.Column('match_id', db.Integer, db.ForeignKey('User.id')),
-    db.UniqueConstraint('user_id', 'match_id', name='unique_matches')
-)
-conversationTable = db.Table('conversations',
+matchTable = db.Table('matches',
     db.Column('user_id', db.Integer, db.ForeignKey('User.id')),
-    db.Column('conversation_id', db.Integer, db.ForeignKey('Conversation.id'))
+    db.Column('match_id', db.Integer, db.ForeignKey('Match.id'))
+)
+matchItems = db.Table('items',
+    db.Column('match_id', db.Integer, db.ForeignKey('Match.id')),
+    db.Column('item_id', db.Integer, db.ForeignKey('Item.id'))
 )
 
 class User(db.Model):
@@ -203,15 +202,11 @@ class User(db.Model):
     matchCount = db.Column(db.Integer)
     itemCount = db.Column(db.Integer)
     items = db.relationship('Item', backref='User', lazy='dynamic')
-    conversations = db.relationship("Conversation", secondary=conversationTable, back_populates='party')
+    matches = db.relationship("Match", secondary=matchTable, back_populates='party')
     friends = db.relationship('User',
                            secondary=friendship,
                            primaryjoin=id==friendship.c.user_id,
                            secondaryjoin=id==friendship.c.friend_id)
-    matches = db.relationship('User',
-                           secondary=match,
-                           primaryjoin=id==match.c.user_id,
-                           secondaryjoin=id==match.c.match_id)
 
     def __init__(self, email, nickname, password, interests):
         self.email = email
@@ -253,25 +248,23 @@ class User(db.Model):
             friend.updateFriendCount()
             db.session.commit()
 
-    def match(self, match):
-        if match not in self.matches:
-            self.matches.append(match)
-            match.matches.append(self)
-
-            matchConvo = Conversation()
-            matchConvo.party = [self, match]
-
-            self.updateMatchCount()
-            match.updateMatchCount()
-            db.session.commit()
+    def match(self, user, item):
+        for match in self.matches:
+            if user in match.party:
+                return False
+        matchConvo = Match(item)
+        matchConvo.party = [self, user]
+        self.updateMatchCount()
+        user.updateMatchCount()
+        db.session.commit()
 
     def unmatch(self, match):
         if match in self.matches:
-            self.matches.remove(match)
-            match.matches.remove(self)
-            self.updateMatchCount()
-            match.updateMatchCount()
-            db.session.commit()
+            for user in match.party:
+                user.matches.remove(match)
+                user.updateMatchCount()
+        db.session.delete(match)
+        db.session.commit()
 
     def appendItem(self, item):
         self.items.append(item)
@@ -297,6 +290,7 @@ class Item(db.Model):
     price = db.Column(db.String(80))
     dateCreated = db.Column(db.DateTime)
     owner = db.Column(db.Integer, db.ForeignKey('User.id'))
+    matches = db.relationship('Match', secondary=matchItems, back_populates='items')
 
     def __init__(self, name, tags, price):
         self.name = name
@@ -313,17 +307,31 @@ class Item(db.Model):
 #     __tablename__ = 'Tag'
 
 # Match conversation
-class Conversation(db.Model):
-    __tablename__ = 'Conversation'
+class Match(db.Model):
+    __tablename__ = 'Match'
 
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    party = db.relationship('User', secondary=conversationTable, back_populates='conversations')
-    messages = db.relationship('Message', backref='Conversation', lazy='dynamic')
+    party = db.relationship('User', secondary=matchTable, back_populates='matches')
+    items = db.relationship("Item", secondary=matchItems, back_populates='matches')
+    messages = db.relationship('Message', backref='Match', lazy='dynamic')
     lastMessage = db.Column(db.String(160))
     dateCreated = db.Column(db.DateTime)
 
-    def __init__(self):
+    def __init__(self, item):
         self.dateCreated = datetime.utcnow()
+        self.lastMessage = "Send a message!"
+        self.items.append(item)
+        db.session.commit()
+
+    def __repr__(self):
+        userNames = []
+        itemNames = []
+        for user in self.party:
+            userNames.append(user.nickname)
+        for item in self.items:
+            itemNames.append(item.name)
+        return "<Match(\n       id='%d'\n       party='%s'\n       items='%s'\n       numMessages='%d')>" % (
+            self.id, userNames, itemNames, len(self.messages.all()))
 
     def newMessage(self, message):
         self.messages.append(message)
@@ -332,13 +340,22 @@ class Conversation(db.Model):
 
     def deleteMessage(self, message):
         self.messages.remove(message)
+        db.session.delete(message)
+        db.session.commit()
+
+    def addItem(self, item):
+        self.items.append(item)
+        db.session.commit()
+
+    def removeItem(self,item):
+        self.items.remove(item)
         db.session.commit()
 
 class Message(db.Model):
     __tablename__ = 'Message'
 
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    conversation = db.Column(db.Integer, db.ForeignKey('Conversation.id'))
+    conversation = db.Column(db.Integer, db.ForeignKey('Match.id'))
     text = db.Column(db.String(160))
     sender = db.Column(db.Integer)
     dateCreated = db.Column(db.DateTime)

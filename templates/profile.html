@@ -160,9 +160,9 @@
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for conversation in current_user.conversations %}
+			        	{% for match in current_user.matches %}
                             <li><a class="niceLinks" href="/matches/{{ loop.index -1 }}"> 
-                                {% for member in conversation.party %}
+                                {% for member in match.party %}
                                     {% if current_user.id != member.id %}
                                         {{ member.nickname }} 
                                     {% endif %}

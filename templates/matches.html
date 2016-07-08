@@ -2,7 +2,7 @@
 
 {% block title %}
     <script type="text/javascript" src="/static/chat.js"></script>
-    <title>Matches</title>
+    <title>Matches ({{ current_user.matchCount }})</title>
 {% endblock %}
 
 {% block newStyle %}
@@ -51,6 +51,7 @@
         height: 75px;
         width: 100%;
         font-family: Arial;
+        list-style-type: none;
     }
     .matchChat.selected {
         background-color: #F25A5A;
@@ -75,6 +76,7 @@
         text-align: center;
         background-color: #F25A5A;
         color: #FFFFFF;
+        font-family: Arial;
     }
     .currentChatContainer {
         overflow: auto;
@@ -119,16 +121,15 @@
         display: inline-block;
         width: auto;
         max-width: 70%;
+        text-align: left;
     }
     .chatInside.self {
         background-color: #FFE0E0;
         border-radius: 10px 2px 2px 10px;
-        text-align: left;
     }
     .chatInside.other {
         background-color: #E0E0E0;
         border-radius: 2px 10px 10px 2px;
-        text-align: right;
     }
     .messageInput.send {
         position: absolute;
@@ -136,6 +137,9 @@
         bottom: 5px;
         width: 66%;
         text-align: center;
+    }
+    .itemName {
+        color: #9AF2A5;
     }
 </style>
 {% endblock %}
@@ -149,40 +153,54 @@
                 <span><input placeholder="Search" type="text"/></span>
             </div>
             <ul id="ul" style="padding=0px; border=0px; bottom: 0px;">
-                {% for conversation in current_user.conversations %}
-                    <form method="post" name="changeChat{{ loop.index -1 }}" id="changeChat">
-                    {% if loop.index-1 == displayConvo %}
-                        <li class="matchChat selected">
-                    {% else %}
-                        <li onclick="changeChat{{ loop.index -1 }}.submit();" class="matchChat">
-                    {% endif %}
-                            <div class="matchChatInside">
-                                <b style="padding: 0 0 5px 0;">
-                                    {% for member in conversation.party %}
-                                        {% if current_user.id != member.id %}
-                                            {{ member.nickname }} 
-                                        {% endif %}
-                                    {% endfor %}
-                                </b><br/>
-                                <span style="font-size: 85%;">{{ conversation.lastMessage }}</span>
-                            </div>
-                        </li>
-                        <input type="hidden" name="index" value="{{ loop.index -1}}">
-                    </form>
-                {% endfor %}
+            {% for match in current_user.matches %}
+                <form method="post" name="changeChat{{ loop.index -1 }}" id="changeChat">
+                {% if loop.index-1 == displayConvo %}
+                    <li class="matchChat selected">
+                {% else %}
+                    <li onclick="changeChat{{ loop.index -1 }}.submit();" class="matchChat">
+                {% endif %}
+                        <div class="matchChatInside">
+                            <b style="padding: 0 0 5px 0;">
+                                {% for member in match.party %}
+                                    {% if current_user.id != member.id %}
+                                        <a href="/profile/{{ member.id }}">{{ member.nickname }}</a>
+                                    {% endif %}
+                                {% endfor %} : 
+                                {%- for item in match.items -%}
+                                    {% if loop.index > 1 %},{% endif %}
+                                    <a class="itemName" href="/items/{{ item.id }}">
+                                        {{- item.name -}}
+                                    </a>
+                                {%- endfor -%}
+                            </b><br/>
+                            <span style="font-size: 85%;">{{ match.lastMessage }}</span>
+                        </div>
+                    </li>
+                    <input type="hidden" name="index" value="{{ loop.index -1}}">
+                </form>
+            {% endfor %}
             </ul>
         </div>
         <div id="entireChatContainer" style="overflow: hidden; width: auto;">
-            <div class="chatHeader"><b style="font-family: Arial;">
-                {% for member in current_user.conversations[displayConvo].party %}
+            <div class="chatHeader">
+                <b>
+                {% for member in current_user.matches[displayConvo].party %}
                     {% if current_user.id != member.id %}
-                        {{ member.nickname }} 
+                        <a href="/profile/{{ member.id }}">{{ member.nickname }}</a>
                     {% endif %}
-                {% endfor %}
-            </b></div>
+                {% endfor %} :
+                {%- for item in current_user.matches[displayConvo].items -%}
+                    {% if loop.index > 1 %},{% endif %}
+                    <a class="itemName" href="/items/{{ item.id }}">
+                        {{- item.name -}}
+                    </a>
+                {%- endfor -%}
+                </b>
+            </div>
             <div id="currentChatContainer" class="currentChatContainer">
                 <ul id="currentChat" class="currentChat">
-                    {% for message in current_user.conversations[displayConvo].messages %}
+                    {% for message in current_user.matches[displayConvo].messages %}
                         {% if message.sender == current_user.id %}
                             <li class="dateCreated self">{{ message.dateCreated.strftime('%b %d, %Y') }} at {{ message.dateCreated.strftime('%-I:%M %p') }}</li>
                             <li class="chatBubble self">
@@ -204,7 +222,9 @@
         </div>
         <script type="text/javascript">
             var objDiv = document.getElementById("currentChatContainer");
+            var messageTextBox = document.getElementById("messageSend")
             objDiv.scrollTop = objDiv.scrollHeight;
+            messageTextBox.select();
         </script>
 	</div>
 </div>

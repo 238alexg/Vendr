@@ -1,10 +1,21 @@
 #test python code
 
-from app import db, User, Item, Conversation, Message
+# oneUser = User.query.filter_by(id=userid).first()
+# allUsers = User.query.all()
+
+
+from app import db, User, Item, Match, Message
 
 users = User.query.all()
 
-for user in users:
-	print (user.nickname)
-	for convo in user.conversations:
-		print (convo)
+for match in Match.query.all():
+	print (match)
+
+oneUser = User.query.filter_by(id=6).first()
+
+oneUserMatch = oneUser.matches[0]
+
+oneUser.unmatch(oneUserMatch)
+
+for match in Match.query.all():
+	print (match)
