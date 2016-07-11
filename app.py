@@ -131,8 +131,8 @@ def profile(userid):
 @app.route("/matches", methods=['GET','POST'])
 @app.route("/matches/<int:displayConvo>/", methods=['GET','POST'])
 @login_required
-def matches(displayConvo = 0): 
-    if (current_user.matchCount != 0):
+def matches(displayConvo = 0):
+    if (current_user.matchCount != None):
         if (request.method == 'POST'):
             # To change current chat window to another match
             if (request.form.get('index')):
@@ -153,18 +153,71 @@ def matches(displayConvo = 0):
 @app.route("/items/<int:itemNum>", methods=['GET','POST'])
 @login_required
 def items(itemNum = 0):
-    try:
+    if (current_user.itemCount != None):
         if (request.method == 'POST'):
             # To change current chat window to another match
             if (request.form.get('index')):
                 itemNum = int(request.form['index'])
-                return render_template('items.html', itemNum=itemNum)
-        if (current_user.itemCount == 0):
-            # !!!        ~~~~  CHANGE REQUIRED  ~~~~~        !!!
-            # CHANGE THIS TO NOITEMS.HTML
-            return render_template('noMatches.html')
+        return render_template('items.html', itemNum=itemNum)
+    else:
+        # !!!        ~~~~  CHANGE REQUIRED  ~~~~~        !!!
+        # CHANGE THIS TO NOITEMS.HTML
+        return render_template('noMatches.html')
+
+@app.route("/createItem", methods=['GET','POST'])
+@login_required
+def createItem():
+    if (request.method == 'POST'):
+        itemName = request.form['itemName']
+        itemPrice = request.form['itemPrice']
+        itemTags = request.form['itemTags']
+        newItem = Item(itemName, itemTags, itemPrice)
+        current_user.appendItem(newItem)
+        return redirect('/items/' + str(current_user.itemCount-1))
+    else:
+        return render_template('createItem.html')
+
+@app.route("/search/", methods=['GET','POST'])
+@app.route("/search/<string:searchText>", methods=['GET','POST'])
+@login_required
+def search(searchText=None):
+    try:
+        if (request.method == 'POST'):
+            if (request.form.get('searchText')):
+                searchText = request.form['searchText']
+                return redirect('/search/' + searchText)
+            elif (request.form.get('add')):
+                addNum = request.form['add']
+                friend = User.query.filter_by(id=addNum).first()
+                current_user.befriend(friend)
+                return redirect('/search/' + searchText)
+            elif (request.form.get('remove')):
+                removeNum = request.form['remove']
+                friend = User.query.filter_by(id=removeNum).first()
+                current_user.unfriend(friend)
+                print ("Success removed " + friend.nickname)
+                return redirect('/search/' + searchText)
         else:
-            return render_template('items.html', itemNum=itemNum)
+            if (searchText != None):
+                searchResults = []
+                searchPriority = []
+                searchLower = []
+                # Included within name match
+                for user in User.query.all():
+                    # Exact match = highest priority
+                    if searchText == user.nickname:
+                        searchResults.append(user)
+                    # Case sensitive = higher priority
+                    elif searchText in user.nickname:
+                        searchPriority.append(user)
+                    # Search is in name at all = lower priority
+                    elif searchText.lower() in user.nickname.lower():
+                        searchLower.append(user)
+                # append priority search results first
+                searchResults.extend(searchPriority)
+                searchResults.extend(searchLower)
+                return render_template('search.html', searchResults=searchResults, lastSearch=searchText, searched=True)
+            return render_template('search.html', searchResults=[], searched=False)
     except BaseException as e:
         print e
 

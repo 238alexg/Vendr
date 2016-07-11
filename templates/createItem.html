@@ -1,0 +1,48 @@
+<!-- Page to create an item -->
+
+{% extends "base.html" %}
+
+{% block title %}
+    <title>Create Item</title>
+{% endblock %}
+
+{% block newStyle %}
+<style type="text/css">
+	.itemsHeader {
+        text-align: center;
+        color: #F25A5A;
+        font-size: 200%;
+        font-family: Arial;
+        text-decoration: none;
+        padding: 17px 15px 8px 15px;
+    }
+    .itemsContainer {
+        top:0px;
+        bottom:0px;
+        height: 80vh;
+    }
+    .textInputs {
+    	display: block;
+		width: 60%;
+		font-family: sans-serif;
+		font-size: 24px;
+		color: #FF4D4D;
+    	margin: 0 10% 0 20%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="box">
+	<div class="itemsHeader">New Item</div>
+	<hr>
+	<div class="itemsContainer">
+        <form id="newItem" method="post">
+        	<input class="textInputs" type="text" name="itemName" id="itemName" placeholder="Name"><br/>
+        	<input class="textInputs" type="text" name="itemPrice" id="itemPrice" placeholder="Price"><br/>
+        	<input class="textInputs" type="text" name="itemTags" id="itemTags" placeholder="Tags (separate by commas)"><br/>
+        	<input class="textInputs" type="submit"/>
+        </form>
+	</div>
+</div>
+{% endblock %}
