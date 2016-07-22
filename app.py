@@ -1,7 +1,9 @@
 #app.py
 
-from flask import Flask, render_template, request, url_for, redirect, flash
+import re
+from flask import Flask, render_template, request, url_for, redirect, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import safe_join
 from sqlalchemy.ext.declarative import declarative_base
 from flask.ext.login import LoginManager, login_user, login_required, logout_user, current_user
 from datetime import datetime
@@ -61,9 +63,12 @@ def login():
 
                 user = User.query.filter_by(email=logEmail).first()
                 
+                #check for username match AND email for log in
+                if (user == None):
+                    user = User.query.filter_by(nickname=logEmail).first()
                 if (user == None):
                     error.append(3)
-                    print("Email not found")
+                    print("Account not found")
                 elif (logPass != user.password):
                     error.append(4)
                     print("Incorrect password")
@@ -80,33 +85,50 @@ def login():
                     return redirect('/profile/' + str(current_user.id))
             # Handle sign up
             elif (request.form.get('completeSignUp')):
-                email = request.form['email']
-                password = request.form['password']
-                confirmPass = request.form['confirmPass']
-                nickname = request.form['nickname']
-                interests = request.form['interest']
-                # If password length is < 7, error
-                if (len(password) < 7):
-                    error.append(5)
-                # If password fields don't match, error
-                elif (password != confirmPass):
-                    error.append(1)
-                # If email not in correct format, error
-                if ('@' not in email) | ('.' not in email):
-                    error.append(2)
-                # If email already in use
-                if (User.query.filter_by(email=email).first() != None):
-                    error.append(6)
-                # If any errors thrown, render login with errors
-                if error != []:
-                    return render_template('login.html', error = error)
-                # Else add user to database
-                else:
-                    newUser = User(email, nickname, password, interests)
-                    db.session.add(newUser)
-                    db.session.commit()
-                    login_user(newUser)
-                    return redirect('/profile/' + str(newUser.id))
+                try:
+                    email = request.form['email']
+                    password = request.form['password']
+                    confirmPass = request.form['confirmPass']
+                    nickname = request.form['nickname']
+                    tagStrings = request.form['tags']
+                    # Errors for: password length is < 7, password fields don't match
+                    #             email not in correct format, email already in use
+                    if (len(password) < 7):
+                        error.append(5)
+                    elif (password != confirmPass):
+                        error.append(1)
+                    if ('@' not in email) | ('.' not in email):
+                        error.append(2)
+                    if (User.query.filter_by(email=email).first() != None):
+                        error.append(6)
+                    # If any errors thrown, render login with errors
+                    if error != []:
+                        return render_template('login.html', error = error)
+                    # Else add user to database
+                    else:
+                        tagToks = re.split('\W+', tagStrings)
+                        print tagToks
+                        newUser = User(email, nickname, password, "This is my bio")
+                        db.session.add(newUser)
+                        db.session.commit()
+
+                        for tag in tagToks:
+                            existingTag = Tag.query.filter_by(name=tag).first()
+                            if (existingTag != None):
+                                print "EXISTING TAG: " + existingTag.name
+                                newUser.tags.append(existingTag)
+                            else:
+                                print "NEW TAG: " + tag
+                                newTag = Tag(tag)
+                                db.session.add(newTag)
+                                db.session.commit()
+                                newUser.tags.append(newTag)
+                        db.session.commit()
+
+                        login_user(newUser)
+                        return redirect('/profile/' + str(newUser.id))
+                except BaseException as e:
+                    print e
         return render_template('login.html', error = error)
     else:
         return redirect('/profile/' + str(current_user.id))
@@ -137,7 +159,6 @@ def matches(displayConvo = 0):
             # To change current chat window to another match
             if (request.form.get('index')):
                 displayConvo = int(request.form['index'])
-                return render_template('matches.html', displayConvo=displayConvo)
             # To send a message to the current match
             elif (request.form.get('messageSend')):
                 displayConvo = int(request.form['indexSend'])
@@ -148,6 +169,28 @@ def matches(displayConvo = 0):
         return render_template('matches.html', displayConvo=displayConvo)
     else:
         return render_template('noMatches.html')
+
+# @app.route('/newMessage', methods=['GET','POST'])
+# @login_required
+# def newMessage(itemNum = 0):
+#     print "SEND MESSAGE"
+#     # To change current chat window to another match
+#     # if (request.form.get('index')):
+#     # displayConvo = int(request.form['index'])
+#     displayConvo = request.args.get('indexSend', 0, type=int)
+#     print displayConvo
+#     messageText = request.args.get('messageSend', "", type=str)
+#     print messageText
+#     currMatch = current_user.matches[displayConvo]
+#     currMatch.newMessage(Message(messageText,current_user))
+
+#     newMsg = currMatch.messages[-1]
+#     date = str(message.dateCreated.strftime('%b %d, %Y')) + "at" + str(message.dateCreated.strftime('%-I:%M %p'))
+    
+#     print newMsg
+#     print date
+
+#     return jsonify(date=date, message=messageText)
 
 @app.route("/items", methods=['GET','POST'])
 @app.route("/items/<int:itemNum>", methods=['GET','POST'])
@@ -181,45 +224,58 @@ def createItem():
 @app.route("/search/<string:searchText>", methods=['GET','POST'])
 @login_required
 def search(searchText=None):
-    try:
-        if (request.method == 'POST'):
-            if (request.form.get('searchText')):
-                searchText = request.form['searchText']
-                return redirect('/search/' + searchText)
-            elif (request.form.get('add')):
-                addNum = request.form['add']
-                friend = User.query.filter_by(id=addNum).first()
-                current_user.befriend(friend)
-                return redirect('/search/' + searchText)
-            elif (request.form.get('remove')):
-                removeNum = request.form['remove']
-                friend = User.query.filter_by(id=removeNum).first()
-                current_user.unfriend(friend)
-                print ("Success removed " + friend.nickname)
-                return redirect('/search/' + searchText)
-        else:
-            if (searchText != None):
-                searchResults = []
-                searchPriority = []
-                searchLower = []
-                # Included within name match
-                for user in User.query.all():
-                    # Exact match = highest priority
-                    if searchText == user.nickname:
-                        searchResults.append(user)
-                    # Case sensitive = higher priority
-                    elif searchText in user.nickname:
-                        searchPriority.append(user)
-                    # Search is in name at all = lower priority
-                    elif searchText.lower() in user.nickname.lower():
-                        searchLower.append(user)
-                # append priority search results first
-                searchResults.extend(searchPriority)
-                searchResults.extend(searchLower)
-                return render_template('search.html', searchResults=searchResults, lastSearch=searchText, searched=True)
-            return render_template('search.html', searchResults=[], searched=False)
-    except BaseException as e:
-        print e
+    if (request.method == 'POST'):
+        if (request.form.get('searchText')):
+            searchText = request.form['searchText']
+            return redirect('/search/' + searchText)
+        elif (request.form.get('add')):
+            addNum = request.form['add']
+            friend = User.query.filter_by(id=addNum).first()
+            current_user.befriend(friend)
+            return redirect('/search/' + searchText)
+        elif (request.form.get('remove')):
+            removeNum = request.form['remove']
+            friend = User.query.filter_by(id=removeNum).first()
+            current_user.unfriend(friend)
+            print ("Success removed " + friend.nickname)
+            return redirect('/search/' + searchText)
+    else:
+        if (searchText != None):
+            searchResults = []
+            searchPriority = []
+            searchLower = []
+            # Included within name match
+            for user in User.query.all():
+                # Exact match = highest priority
+                if searchText == user.nickname:
+                    searchResults.append(user)
+                # Case sensitive = higher priority
+                elif searchText in user.nickname:
+                    searchPriority.append(user)
+                # Search is in name at all = lower priority
+                elif searchText.lower() in user.nickname.lower():
+                    searchLower.append(user)
+            # append priority search results first
+            searchResults.extend(searchPriority)
+            searchResults.extend(searchLower)
+            return render_template('search.html', searchResults=searchResults, lastSearch=searchText, searched=True)
+        return render_template('search.html', searchResults=[], searched=False)
+
+
+@app.route("/matcher/", methods=['GET','POST'])
+@login_required
+def matcher():
+    words = ["This","that","the other thing"]
+    return render_template("matcher.html", words=words)
+
+@app.route("/loadMatches/", methods=['GET','POST'])
+@login_required
+def loadMatches():
+    print "GOT HERE 2"
+    newWord = request.args.get('newWord', "TEST", type=str)
+    print newWord
+    newArray = [newWord, "Billy", "Sandra"]
+    return jsonify(result=newArray)
 
 
 #####################################################
@@ -239,6 +295,14 @@ matchItems = db.Table('items',
     db.Column('match_id', db.Integer, db.ForeignKey('Match.id')),
     db.Column('item_id', db.Integer, db.ForeignKey('Item.id'))
 )
+userTagTable = db.Table('userTags',
+    db.Column('user_id', db.Integer, db.ForeignKey('User.id')),
+    db.Column('tag_id', db.Integer, db.ForeignKey('Tag.id'))
+)
+itemTagTable = db.Table('itemTags',
+    db.Column('item_id', db.Integer, db.ForeignKey('Item.id')),
+    db.Column('tag_id', db.Integer, db.ForeignKey('Tag.id'))
+)
 
 class User(db.Model):
     __tablename__ = 'User'
@@ -247,13 +311,14 @@ class User(db.Model):
     email = db.Column(db.String(80), unique=True)
     nickname = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(80))
-    interests = db.Column(db.String(120))
+    bio = db.Column(db.String(120))
     dateCreated = db.Column(db.DateTime)
     active = db.Column(db.Boolean)
     admin = db.Column(db.Boolean)
     friendCount = db.Column(db.Integer)
     matchCount = db.Column(db.Integer)
     itemCount = db.Column(db.Integer)
+    tags = db.relationship("Tag", secondary=userTagTable, back_populates='users')
     items = db.relationship('Item', backref='User', lazy='dynamic')
     matches = db.relationship("Match", secondary=matchTable, back_populates='party')
     friends = db.relationship('User',
@@ -261,11 +326,11 @@ class User(db.Model):
                            primaryjoin=id==friendship.c.user_id,
                            secondaryjoin=id==friendship.c.friend_id)
 
-    def __init__(self, email, nickname, password, interests):
+    def __init__(self, email, nickname, password, bio):
         self.email = email
         self.nickname = nickname
         self.password = password
-        self.interests = interests
+        self.bio = bio
         self.dateCreated = datetime.utcnow()
         self.active = True
 
@@ -339,15 +404,14 @@ class Item(db.Model):
 
     id = db.Column(db.Integer, unique=True, primary_key=True)
     name = db.Column(db.String(80), unique=True)
-    tags = db.Column(db.String(80), unique=True)
     price = db.Column(db.String(80))
     dateCreated = db.Column(db.DateTime)
     owner = db.Column(db.Integer, db.ForeignKey('User.id'))
     matches = db.relationship('Match', secondary=matchItems, back_populates='items')
+    tags = db.relationship('Tag', secondary=itemTagTable, back_populates='items')
 
-    def __init__(self, name, tags, price):
+    def __init__(self, name, price):
         self.name = name
-        self.tags = tags
         self.price = price
         self.dateCreated = datetime.utcnow()
 
@@ -356,8 +420,21 @@ class Item(db.Model):
             self.name, self.tags, self.price, self.owner)
 
 # Tags are relationships for item tags and user interests
-# class Tag(db.Model):
-#     __tablename__ = 'Tag'
+class Tag(db.Model):
+    __tablename__ = 'Tag'
+
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    users = db.relationship('User', secondary=userTagTable, back_populates='tags')
+    items = db.relationship("Item", secondary=itemTagTable, back_populates='tags')
+    name = db.Column(db.String(80), unique=True)
+    dateCreated = db.Column(db.DateTime)
+
+    def __init__(self, name):
+        self.name = name.lower()
+        self.dateCreated = datetime.utcnow()
+
+    def __repr__(self):
+        return "<Tag(id='%d', name='%s')>" % (self.id, self.name)
 
 # Match conversation
 class Match(db.Model):

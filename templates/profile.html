@@ -93,6 +93,9 @@
     .noHoverChange a:hover {
         background-color: inherit;
     }
+    .black {
+        color
+    }
 </style>
 {% endblock %}
 
@@ -114,7 +117,13 @@
     			        	<li>Email:</li><br>
     			        	<li>&nbsp<span id="email" class="editInfo">{{ current_user.email }}</span></li><br>
     			        	<li>Interests:</li><br>
-    			        	<li>&nbsp<span id="interests" class="editInfo">{{ current_user.interests }}</span></li><br>
+    			        	<li>&nbsp<span id="interests" class="editInfo">{{ current_user.bio }}</span></li><br>
+                            <li>Tags:</li><br>
+                            <li>&nbsp<span id="tags" class="editInfo">
+                                {% for tag in current_user.tags %}
+                                    <a style="color: #000;" href="/search/tag/{{ tag.id }}">{{ tag.name }}</a>
+                                {% endfor %}
+                            </span></li><br>
     				    </ul>
     		        </div>
                 </form>

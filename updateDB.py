@@ -1,6 +1,6 @@
 # update DB
 
-from app import db, User, Item, Match, Message
+from app import db, User, Item, Match, Message, Tag
 
 db.drop_all()
 db.create_all()
@@ -13,9 +13,13 @@ test3 = User("noob@lolz.com","Ima Noob","testtest","being noobish")
 test4 = User("nerd@u.edu","Nerd Bird","testtest","glasses")
 test5 = User("cook@cook.cook","Chef Meats","testtest","Ham")
 
-item1 = Item("Books","Learning, fun times", "$45.00")
-item2 = Item("Ham","Food, pig", "$12.00")
-item3 = Item("Football","Sports, fun times", "$23.00")
+item1 = Item("Books", "$45.00")
+item2 = Item("Ham", "$12.00")
+item3 = Item("Football", "$23.00")
+
+tag1 = Tag("Learning")
+tag2 = Tag("Sports")
+tag3 = Tag("Cooking")
 
 db.session.add(test1)
 db.session.add(test2)
@@ -25,9 +29,11 @@ db.session.add(test5)
 db.session.add(item1)
 db.session.add(item2)
 db.session.add(item3)
+db.session.add(tag1)
+db.session.add(tag2)
+db.session.add(tag3)
 
 db.session.commit()
-
 
 me.befriend(test1)
 me.befriend(test2)
@@ -42,6 +48,10 @@ me.appendItem(item3)
 me.match(test1, item1)
 me.match(test2, item2)
 me.match(test3, item3)
+
+me.tags.append(tag1)
+me.tags.append(tag2)
+me.tags.append(tag3)
 
 # db.session.commit()
 
