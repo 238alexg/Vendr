@@ -58,33 +58,127 @@ function createProfileAnimation() {
 	}
 }
 
-// Split tags with spaces and commas, do not include empty string tags
-// function splitTagsNoEmpty(s) {
-// 	strTok = s.split(/,| /);
-// 	tags = [];
-// 	for (var i = 0; i <= strTok.length - 1; i++) {
-// 		if (strTok[i] != "") {
-// 			tags.push(strTok[i]);
-// 		}
-// 		console.log(tags);
-// 	};
-//     return tags;
-// }
+// Enable new user submit button if all validation ok
+function canSubmitNewUser() {
+	var submitNewUser = document.getElementById('completeSignUp');
+
+	if (document.getElementsByClassName("false").length != 0) {
+		submitNewUser.disabled = true;
+		$(submitNewUser).removeClass();
+		submitNewUser.classList.add('cannotSubmit');
+	}
+	else {
+		submitNewUser.disabled = false;
+		$(submitNewUser).removeClass();
+		submitNewUser.classList.add('canSubmit');
+	}
+}
 
 function init() {
 	var createProfileButton = document.getElementById("signUp");
 	var tags = document.getElementById("tags");
 
+	// Email validation with AJAX
+	$('input[name="email"]').on('blur',function () {
+        $.getJSON('/emailValidate', {
+        email: $('input[name="email"]').val()
+    }, 
+    function(data) {
+        var emailValid = document.getElementById('emailValidation');
+        $(emailValid).empty();
+        if (data.valid == 0) {
+            $(emailValid).html("Valid Email");
+            $(emailValid).removeClass();
+            emailValid.classList.add('true');
+            canSubmitNewUser();
+        }
+        else if (data.valid == 1) {
+        	$(emailValid).html("Email must have format me@email.com");
+            $(emailValid).removeClass();
+            emailValid.classList.add('false');
+        }
+        else {
+        	$(emailValid).html("Email already in use!");
+            $(emailValid).removeClass();
+            emailValid.classList.add('false');
+        }
+    });
+    return false;
+    });
+
+	// Password validation
+	$('input[name="password"]').on('blur',function () {
+		var pass = document.getElementById('password');
+		var passValid = document.getElementById('passwordValidation');
+		var conPassValid = document.getElementById('passConfirmation');
+
+		$(conPassValid).html("&nbsp");
+
+		if ($(pass).val().length < 7) {
+			$(passValid).html("Password must be ≥ 7 characters");
+            $(passValid).removeClass();
+            passValid.classList.add('false');
+        }
+        else {
+        	$(passValid).html("&nbsp");
+            $(passValid).removeClass();
+            passValid.classList.add('true');
+            canSubmitNewUser();
+        }
+	});
+
+	// Password confirm validation
+	$('input[name="confirmPass"]').on('blur',function () {
+		var pass = document.getElementById('password');
+		var conPass = document.getElementById('confirmPass');
+		var conPassValid = document.getElementById('passConfirmation');
+
+		if ($(pass).val().length < 7) {
+			$(conPassValid).html("Password must be ≥ 7 characters");
+            $(conPassValid).removeClass();
+            conPassValid.classList.add('false');
+        }
+        else if ($(pass).val() != $(conPass).val()) {
+        	console.log($(pass).val());
+        	console.log($(conPass).val());
+        	$(conPassValid).html("Password does not match");
+            $(conPassValid).removeClass();
+            conPassValid.classList.add('false');
+        }
+        else {
+        	$(conPassValid).html("Passwords Match!");
+            $(conPassValid).removeClass();
+            conPassValid.classList.add('true');
+            canSubmitNewUser();
+        }
+	});
+
+	// Nickname validation with AJAX
+	$('input[name="nickname"]').on('blur',function () {
+		$('#nicknameValidation').html('&nbsp');
+		if ($('input[name="nickname"]').val() != "") {
+		    $.getJSON('/nicknameValidate', {
+		        nickname: $('input[name="nickname"]').val()
+		    }, 
+		    function(data) {
+		        var emailValid = document.getElementById('nicknameValidation');
+		        if (data.valid == true) {
+		            $(emailValid).html("Nickname Available!");
+		            $(emailValid).removeClass();
+		            emailValid.classList.add('true');
+		            canSubmitNewUser();
+		        }
+		        else {
+		        	$(emailValid).html("Nickname Unavailable");
+		            $(emailValid).removeClass();
+		            emailValid.classList.add('false');
+		        }
+		    });
+		    return false;
+		};
+    });
+
 	createProfileButton.onclick = createProfileAnimation;
-	// $('input[name="tags"]').keydown(function (e) {
-	// 	// console.log(e.keyCode);
-	//     if((e.keyCode == 188) || (e.keyCode == 32)){
-	//     	rawTags = $('input[name="tags"]').val();
-	//     	tagToks = splitTagsNoEmpty(rawTags);
-	//     	console.log(tagToks);
-	//     	tags.innerHTML = tagToks;
-	//     }
-	// });
 }
 
 window.onload = init;

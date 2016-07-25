@@ -54,6 +54,20 @@
     	font-size: 16px;
     	color: #FF4D4D;
     }
+    .true {
+        color: green;
+    }
+    .false {
+        color: red;
+    }
+    .canSubmit {
+        background-color:#FFFFFF;
+        color:#F25A5A;
+    }
+    .cannotSubmit {
+        background-color:#DEDEDE;
+        color:#F29A9A;
+    }
     input[type="text"]{
     	display: block;
 		width: 60%;
@@ -82,45 +96,36 @@
 	    display: inline-block;
 	    font-size: 24px;
     }
+
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="box">
     <div id="boxInside">
-    	<form action="" method="post" name="createAccount" id="createAccount">
+    	<form method="post" name="createAccount" id="createAccount">
 	    	
 	    	<br><br>
 	        <p class="extraSpace">Sign Up</p>
 	        <div>
-                <p style="color:red;">
-                    {% if 6 in error %}
-                        Email already exists
-                    {% elif 2 in error %}
-                        Email requires this format: me@email.com
-                    {% elif 5 in error %}
-                        Passwords must be ≥ 7 characters!
-                    {% elif 1 in error %}
-                        Passwords do not match!
-                    {% else %}
-                        &nbsp
-                    {% endif %}
-                </p>
+                <p id="emailValidation" class="false">&nbsp</p>
 	        	<input type="text" class="form-control" name="email" placeholder="email">
-	        	<br>
-	        	<input type="password" class="form-control" name="password" placeholder="password">
-                <br>
-	        	<input type="password" class="form-control" name="confirmPass" placeholder="confirm password">
-	        	<br>
+                <p id="passwordValidation" class="false">&nbsp</p>
+	        	<input type="password" class="form-control" name="password" id="password" placeholder="password">
+                <p id="passConfirmation" class="false">&nbsp</p>
+	        	<input type="password" class="form-control" id="confirmPass" name="confirmPass" placeholder="confirm password">
+	        	<br />
 	        	<button id="signUp" type="button" value="signUp">></button>
     		</div>
 
             <div id="slider" style="background-color: #FF4D4D;" class="slideForm">
                 <p class="sliderText">About <br> You</p>
+                <p id="nicknameValidation" class="false">&nbsp</p>
                 <input id="nick" type="text" class="form-control" name="nickname" placeholder="nickname">
+                <br />
                 <input type="text" class="form-control" name="tags" placeholder="tags (seperate w/ commas)">
                 <br><br>
-                <button form="createAccount" name="completeSignUp" value="completeSignUp" style="background-color:#FFFFFF; color:#F25A5A" type ="submit">Sign Up</button>
+                <button form="createAccount" name="completeSignUp" id="completeSignUp" value="completeSignUp" class="cannotSubmit" type ="submit" disabled>Sign Up</button>
             </div>
             <div class="slideForm">
             </div>
@@ -130,14 +135,7 @@
     <div id="boxInside" style="z-index:0;">
     	<br><br>
         <p class="extraSpace">Login</p>
-        <br><p style="color:red;">
-            {% if 3 in error %}
-                Email not valid!
-            {% elif 4 in error %}
-                Incorrect password!
-            {% else %}
-                &nbsp
-            {% endif %}
+        <br><p >
         </p>
         <div>
 	        <form id="login" action="" method="post">

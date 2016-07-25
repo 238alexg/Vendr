@@ -73,7 +73,7 @@ def login():
                     error.append(4)
                     print("Incorrect password")
                 # User logs in with correct credentials
-                else:
+                if (error == []):
                     # Remember user if remember is checked
                     if (request.form.get('remember')):
                         login_user(user, remember = True)
@@ -83,55 +83,74 @@ def login():
                         db.session.commit()
                     # next = flask.request.args.get('next') ??
                     return redirect('/profile/' + str(current_user.id))
+                else:
+                    print "JSONIFY TIME"
+                    return jsonify(error=error)
+                    
             # Handle sign up
             elif (request.form.get('completeSignUp')):
-                try:
-                    email = request.form['email']
-                    password = request.form['password']
-                    confirmPass = request.form['confirmPass']
-                    nickname = request.form['nickname']
-                    tagStrings = request.form['tags']
-                    # Errors for: password length is < 7, password fields don't match
-                    #             email not in correct format, email already in use
-                    if (len(password) < 7):
-                        error.append(5)
-                    elif (password != confirmPass):
-                        error.append(1)
-                    if ('@' not in email) | ('.' not in email):
-                        error.append(2)
-                    if (User.query.filter_by(email=email).first() != None):
-                        error.append(6)
-                    # If any errors thrown, render login with errors
-                    if error != []:
-                        return render_template('login.html', error = error)
-                    # Else add user to database
-                    else:
-                        tagToks = re.split('\W+', tagStrings)
-                        print tagToks
-                        newUser = User(email, nickname, password, "This is my bio")
-                        db.session.add(newUser)
-                        db.session.commit()
+                email = request.form['email']
+                password = request.form['password']
+                confirmPass = request.form['confirmPass']
+                nickname = request.form['nickname']
+                tagStrings = request.form['tags']
+                # Errors for: password length is < 7, password fields don't match
+                #             email not in correct format, email already in use
+                if (len(password) < 7):
+                    error.append(5)
+                elif (password != confirmPass):
+                    error.append(1)
+                if ('@' not in email) | ('.' not in email):
+                    error.append(2)
+                if (User.query.filter_by(email=email).first() != None):
+                    error.append(6)
+                # If any errors thrown, render login with errors
+                if (error != []):
+                    return jsonify(error = error)
+                # Else add user to database
+                else:
+                    tagToks = re.split('\W+', tagStrings)
+                    print tagToks
+                    newUser = User(email, nickname, password, "This is my bio")
+                    db.session.add(newUser)
+                    db.session.commit()
 
-                        for tag in tagToks:
-                            existingTag = Tag.query.filter_by(name=tag).first()
-                            if (existingTag != None):
-                                print "EXISTING TAG: " + existingTag.name
-                                newUser.tags.append(existingTag)
-                            else:
-                                print "NEW TAG: " + tag
-                                newTag = Tag(tag)
-                                db.session.add(newTag)
-                                db.session.commit()
-                                newUser.tags.append(newTag)
-                        db.session.commit()
+                    for tag in tagToks:
+                        existingTag = Tag.query.filter_by(name=tag).first()
+                        if (existingTag != None):
+                            print "EXISTING TAG: " + existingTag.name
+                            newUser.tags.append(existingTag)
+                        else:
+                            print "NEW TAG: " + tag
+                            newTag = Tag(tag)
+                            db.session.add(newTag)
+                            db.session.commit()
+                            newUser.tags.append(newTag)
+                    db.session.commit()
 
-                        login_user(newUser)
-                        return redirect('/profile/' + str(newUser.id))
-                except BaseException as e:
-                    print e
+                    login_user(newUser)
+                    return redirect('/profile/' + str(newUser.id))
         return render_template('login.html', error = error)
     else:
         return redirect('/profile/' + str(current_user.id))
+
+@app.route("/emailValidate", methods=['GET','POST'])
+def emailValidate():
+    email = request.args.get('email', "NoEmail", type=str)
+    if (User.query.filter_by(email=email).first() != None):
+        return jsonify(valid=2)
+    elif (email == "NoEmail"):
+        return jsonify(valid=1)
+    else:
+        return jsonify(valid=0)
+
+@app.route("/nicknameValidate", methods=['GET','POST'])
+def nicknameValidate():
+    nickname = request.args.get('nickname', "NoName", type=str)
+    if (User.query.filter_by(nickname=nickname).first() != None):
+        return jsonify(valid=False)
+    else:
+        return jsonify(valid=True)
 
 @app.route("/profile/<int:userid>/", methods=['GET','POST'])
 @login_required
