@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    <!-- <script type="text/javascript" src="/static/chat.js"></script> -->
+    <script type="text/javascript" src="/static/chat.js"></script>
     <title>Matches ({{ current_user.matchCount }})</title>
 {% endblock %}
 
@@ -17,8 +17,8 @@
     }
     .messagesContainer {
         border: 2px solid #F25A5A;
-        top:0px;
-        bottom:0px;
+        top: 0px;
+        bottom: 0px;
         height: 80vh;
     }
     .profileHeader {
@@ -85,7 +85,7 @@
         right: 2px;
         left: 30%;
         bottom: 40px;
-        top: 94px;
+        top: 128px;
     }
     .currentChat {
         padding: 10px;
@@ -141,19 +141,60 @@
     .itemName {
         color: #9AF2A5;
     }
+
+    .tabSlider {
+        list-style-type: none;
+        overflow: hidden;
+        border-radius: 10px;
+        display: inline-block;
+        border: 1px solid #F25A5A;
+        margin-bottom: 7px;
+    }
+    .liTabItems {
+        float: left;
+    }
+    .aTabLinks {
+        display: block;
+        color: #F25A5A;
+        text-align: center;
+        padding: 3px 6px;
+        text-decoration: none;
+        font-family: Arial;
+        font-size: 80%;
+    }
+    .selectedTabItem {
+        font-weight: bold;
+        color: #FFF;
+        background-color: #F25A5A;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="box">
 	<div class="profileHeader">{{ current_user.nickname }}'s Matches</div>
-	<div class="messagesContainer">
+	
+    <div style="text-align: center;">
+        <ul class="tabSlider">
+            <li class="liTabItems"><a class="aTabLinks selectedTabItem">All</a></li>
+            <li class="liTabItems"><a class="aTabLinks">Selling</a></li>
+            <li class="liTabItems"><a class="aTabLinks">Buying</a></li>
+        </ul>
+    </div>
+
+
+    <div class="messagesContainer">
 		<div class="chatSidebar">
             <div class="messageInput">
                 <span><input placeholder="Search" type="text"/></span>
             </div>
             <ul id="ul" style="padding=0px; border=0px; bottom: 0px;">
             {% for match in current_user.matches %}
+                {% if current_user == match.party[0] %}
+                    <h1>SELLER</h1>
+                {% else %}
+                    <h1>BUYER</h1>
+                {% endif %}
                 <form method="post" name="changeChat{{ loop.index -1 }}" id="changeChat">
                 {% if loop.index-1 == displayConvo %}
                     <li class="matchChat selected">
@@ -204,7 +245,7 @@
                         {% if message.sender == current_user.id %}
                             <li class="dateCreated self">{{ message.dateCreated.strftime('%b %d, %Y') }} at {{ message.dateCreated.strftime('%-I:%M %p') }}</li>
                             <li class="chatBubble self">
-                                <div class="chatInside self">{{message.text}}</div></li>
+                                <span class="chatInside self">{{message.text}}</span></li>
                         {% else %}
                             <li class="dateCreated other">{{ message.dateCreated.strftime('%b %d, %Y') }} at {{ message.dateCreated.strftime('%-I:%M %p') }}</li>
                             <li class="chatBubble other">
@@ -214,7 +255,7 @@
                 </ul>
             </div>
             <div class="messageInput send">
-                <form method="post" name="sendMessageForm" id="changeChat">
+                <form name="sendMessageForm" id="changeChat" onsubmit="return sendMessage();">
                     <input class="sendMessage" name="messageSend" id="messageSend" placeholder="Send message with Enter" style="width: 90%;" autocomplete="off" type="text"/>
                     <input name="indexSend" id="indexSend" type="hidden" value="{{ displayConvo }}"/>
                 </form>

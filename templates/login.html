@@ -60,6 +60,9 @@
     .false {
         color: red;
     }
+    .logFalse {
+        color: red;
+    }
     .canSubmit {
         background-color:#FFFFFF;
         color:#F25A5A;
@@ -125,29 +128,27 @@
                 <br />
                 <input type="text" class="form-control" name="tags" placeholder="tags (seperate w/ commas)">
                 <br><br>
-                <button form="createAccount" name="completeSignUp" id="completeSignUp" value="completeSignUp" class="cannotSubmit" type ="submit" disabled>Sign Up</button>
+                <button form="createAccount" name="completeSignUp" id="completeSignUp" value="completeSignUp" class="cannotSubmit" disabled>Sign Up</button>
             </div>
             <div class="slideForm">
             </div>
-
     	</form>
     </div>
     <div id="boxInside" style="z-index:0;">
     	<br><br>
         <p class="extraSpace">Login</p>
-        <br><p >
-        </p>
-        <div>
-	        <form id="login" action="" method="post">
-	        	<input id="email" type="text" class="form-control" name="logEmail" placeholder="email">
-                <br>
-	        	<input type="password" class="form-control" name="logPass" placeholder="password">
-	        	<br>
-	        	<input type="checkbox" name="remember" style="font-family: Arial Black;" checked><p class="remMe">&nbsp Remember Me
-	        	<br><br>
-	        	<button form="login" id="loginButton" name="loginButton" value="loginButton" type="submit">></button>
-	        </form>
-    	</div>
+        <br>
+        <form id="login" action="" method="post">
+            <p id="logEmailValidation" class="logFalse">&nbsp</p>
+        	<input id="email" type="text" class="form-control" name="logEmail" placeholder="email">
+            <br>
+            <p id="logPassValidation" class="logFalse">&nbsp</p>
+        	<input type="password" class="form-control" name="logPass" placeholder="password">
+        	<br>
+        	<input type="checkbox" name="remember" style="font-family: Arial Black;" checked><p class="remMe">&nbsp Remember Me
+        	<br><br>
+        	<button form="login" id="loginButton" name="loginButton" value="loginButton" type="button">></button>
+        </form>
     </div>
 </div>
 {% endblock %}

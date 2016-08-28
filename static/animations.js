@@ -78,32 +78,36 @@ function init() {
 	var createProfileButton = document.getElementById("signUp");
 	var tags = document.getElementById("tags");
 
-	// Email validation with AJAX
+	/*
+		SIGN UP VALIDATION
+	*/
+
+	// Email validation for user creation with AJAX
 	$('input[name="email"]').on('blur',function () {
         $.getJSON('/emailValidate', {
-        email: $('input[name="email"]').val()
-    }, 
-    function(data) {
-        var emailValid = document.getElementById('emailValidation');
-        $(emailValid).empty();
-        if (data.valid == 0) {
-            $(emailValid).html("Valid Email");
-            $(emailValid).removeClass();
-            emailValid.classList.add('true');
-            canSubmitNewUser();
-        }
-        else if (data.valid == 1) {
-        	$(emailValid).html("Email must have format me@email.com");
-            $(emailValid).removeClass();
-            emailValid.classList.add('false');
-        }
-        else {
-        	$(emailValid).html("Email already in use!");
-            $(emailValid).removeClass();
-            emailValid.classList.add('false');
-        }
-    });
-    return false;
+	        email: $('input[name="email"]').val()
+	    }, 
+	    function(data) {
+	        var emailValid = document.getElementById('emailValidation');
+	        $(emailValid).empty();
+	        if (data.valid == 0) {
+	            $(emailValid).html("Valid Email");
+	            $(emailValid).removeClass();
+	            emailValid.classList.add('true');
+	        }
+	        else if (data.valid == 1) {
+	        	$(emailValid).html("Email must have format me@email.com");
+	            $(emailValid).removeClass();
+	            emailValid.classList.add('false');
+	        }
+	        else {
+	        	$(emailValid).html("Email already in use!");
+	            $(emailValid).removeClass();
+	            emailValid.classList.add('false');
+	        }
+	        canSubmitNewUser();
+	    });
+	    return false;
     });
 
 	// Password validation
@@ -123,8 +127,8 @@ function init() {
         	$(passValid).html("&nbsp");
             $(passValid).removeClass();
             passValid.classList.add('true');
-            canSubmitNewUser();
         }
+        canSubmitNewUser();
 	});
 
 	// Password confirm validation
@@ -149,8 +153,8 @@ function init() {
         	$(conPassValid).html("Passwords Match!");
             $(conPassValid).removeClass();
             conPassValid.classList.add('true');
-            canSubmitNewUser();
         }
+        canSubmitNewUser();
 	});
 
 	// Nickname validation with AJAX
@@ -166,17 +170,53 @@ function init() {
 		            $(emailValid).html("Nickname Available!");
 		            $(emailValid).removeClass();
 		            emailValid.classList.add('true');
-		            canSubmitNewUser();
 		        }
 		        else {
 		        	$(emailValid).html("Nickname Unavailable");
 		            $(emailValid).removeClass();
 		            emailValid.classList.add('false');
 		        }
+		        canSubmitNewUser();
 		    });
 		    return false;
 		};
     });
+
+	/*
+		LOGIN VALIDATION
+	*/
+
+	// Email validation for user login with AJAX
+	$('button[name="loginButton"]').on('click',function () {
+	    $.ajax({
+            url: '/loginValidate',
+            data: JSON.stringify({
+	        	'email': $('input[name="logEmail"]').val(),
+	        	'password': $('input[name="logPass"]').val()
+	    	}),
+            contentType : "application/json",
+            type: 'POST',
+            success: function(response){
+            	var emailValid = document.getElementById("logEmailValidation");
+            	var passValid = document.getElementById("logPassValidation");
+            	$(emailValid).empty();
+            	$(passValid).empty();
+                if (response.valid == 0) {
+                	$(emailValid).html("Email not found");
+                }
+                else if (response.valid == 1) {
+                	$(passValid).html("Incorrect password");
+                }
+                else {
+                	$("#login").submit();
+                }
+            },
+            error: function(error){
+                console.log(error);
+            }
+        });
+    });
+
 
 	createProfileButton.onclick = createProfileAnimation;
 }

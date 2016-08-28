@@ -32,6 +32,7 @@ def load_user(user_id):
 ##################  APP ROUTES  #####################
 #####################################################
 
+# Logout with redirect to login
 @app.route("/logout")
 @login_required
 def logout():
@@ -42,98 +43,53 @@ def logout():
     print("Successfully logged out")
     return redirect('/')
 
+# Page error handlers
 @app.errorhandler(401)
 def unauthorized_error(e):
     return render_template('401.html'), 401
-
 @app.errorhandler(500)
 def unauthorized_error(e):
     return render_template('500.html'), 500
-    
+
+# Home page redirections
 @app.route("/", methods=['GET','POST'])
 def login():
     if (current_user.is_anonymous == True):
-        error = [] #render_template with param error = error in future
-
         if (request.method == 'POST'):
-            # Handle sign in
-            if(request.form.get('loginButton')):
+            # Handle log in
+            if(request.form.get('logEmail')):
                 logEmail = request.form['logEmail']
                 logPass = request.form['logPass']
-
                 user = User.query.filter_by(email=logEmail).first()
-                
-                #check for username match AND email for log in
-                if (user == None):
-                    user = User.query.filter_by(nickname=logEmail).first()
-                if (user == None):
-                    error.append(3)
-                    print("Account not found")
-                elif (logPass != user.password):
-                    error.append(4)
-                    print("Incorrect password")
-                # User logs in with correct credentials
-                if (error == []):
-                    # Remember user if remember is checked
-                    if (request.form.get('remember')):
-                        login_user(user, remember = True)
-                    else:
-                        login_user(user)
-                        user.active = True
-                        db.session.commit()
-                    # next = flask.request.args.get('next') ??
-                    return redirect('/profile/' + str(current_user.id))
+                if (request.form.get('remember')):
+                    login_user(user, remember=True)
                 else:
-                    print "JSONIFY TIME"
-                    return jsonify(error=error)
-                    
+                    login_user(user)
+                return redirect('/profile/' + str(current_user.id))
             # Handle sign up
             elif (request.form.get('completeSignUp')):
                 email = request.form['email']
                 password = request.form['password']
-                confirmPass = request.form['confirmPass']
                 nickname = request.form['nickname']
                 tagStrings = request.form['tags']
-                # Errors for: password length is < 7, password fields don't match
-                #             email not in correct format, email already in use
-                if (len(password) < 7):
-                    error.append(5)
-                elif (password != confirmPass):
-                    error.append(1)
-                if ('@' not in email) | ('.' not in email):
-                    error.append(2)
-                if (User.query.filter_by(email=email).first() != None):
-                    error.append(6)
-                # If any errors thrown, render login with errors
-                if (error != []):
-                    return jsonify(error = error)
-                # Else add user to database
-                else:
-                    tagToks = re.split('\W+', tagStrings)
-                    print tagToks
-                    newUser = User(email, nickname, password, "This is my bio")
-                    db.session.add(newUser)
-                    db.session.commit()
-
-                    for tag in tagToks:
-                        existingTag = Tag.query.filter_by(name=tag).first()
-                        if (existingTag != None):
-                            print "EXISTING TAG: " + existingTag.name
-                            newUser.tags.append(existingTag)
-                        else:
-                            print "NEW TAG: " + tag
-                            newTag = Tag(tag)
-                            db.session.add(newTag)
-                            db.session.commit()
-                            newUser.tags.append(newTag)
-                    db.session.commit()
-
-                    login_user(newUser)
-                    return redirect('/profile/' + str(newUser.id))
-        return render_template('login.html', error = error)
+                newUser = User(email, nickname, password)
+                # Find existing tags/create new tags
+                tagToks = re.split('\W+', tagStrings)
+                for tag in tagToks:
+                    existingTag = Tag.query.filter_by(name=tag).first()
+                    if (existingTag != None):
+                        newUser.tags.append(existingTag)
+                    else:
+                        newTag = Tag(tag)
+                        newUser.tags.append(newTag)
+                db.session.commit()
+                login_user(newUser)
+                return redirect('/profile/' + str(newUser.id))
+        return render_template('login.html')
     else:
         return redirect('/profile/' + str(current_user.id))
 
+# Validate user email availibility on sign up
 @app.route("/emailValidate", methods=['GET','POST'])
 def emailValidate():
     email = request.args.get('email', "NoEmail", type=str)
@@ -144,6 +100,7 @@ def emailValidate():
     else:
         return jsonify(valid=0)
 
+# Validate user nickname availibility on sign up
 @app.route("/nicknameValidate", methods=['GET','POST'])
 def nicknameValidate():
     nickname = request.args.get('nickname', "NoName", type=str)
@@ -152,6 +109,28 @@ def nicknameValidate():
     else:
         return jsonify(valid=True)
 
+# Validate user login credentials on sign up
+@app.route("/loginValidate", methods=['GET','POST'])
+def loginValidate():
+    email = request.json['email']
+    password = request.json["password"]
+    logUser = User.query.filter_by(email=email).first()
+
+    print email
+    print password
+    print logUser
+
+    if (logUser == None):
+        print "User not found"
+        return jsonify(valid=0)
+    elif (logUser.password != password):
+        print "Passwords don't match"
+        return jsonify(valid=1)
+    else:
+        print "Start of user log in"
+        return jsonify(valid=2)
+
+# Page for user info display
 @app.route("/profile/<int:userid>/", methods=['GET','POST'])
 @login_required
 def profile(userid):
@@ -169,48 +148,34 @@ def profile(userid):
     except BaseException as e:
         print e
 
+# Page for match chats
 @app.route("/matches", methods=['GET','POST'])
-@app.route("/matches/<int:displayConvo>/", methods=['GET','POST'])
+@app.route("/matches/<string:category>/<int:displayConvo>/", methods=['GET','POST'])
 @login_required
-def matches(displayConvo = 0):
+def matches(category="all", displayConvo=0):
     if (current_user.matchCount != None):
         if (request.method == 'POST'):
             # To change current chat window to another match
             if (request.form.get('index')):
                 displayConvo = int(request.form['index'])
-            # To send a message to the current match
-            elif (request.form.get('messageSend')):
-                displayConvo = int(request.form['indexSend'])
-                messageText = request.form['messageSend']
-                currMatch = current_user.matches[displayConvo]
-                currMatch.newMessage(Message(messageText,current_user))
-                return redirect('matches/' + str(displayConvo))
-        return render_template('matches.html', displayConvo=displayConvo)
+        return render_template('matches.html', displayConvo=displayConvo, category=category)
     else:
         return render_template('noMatches.html')
 
-# @app.route('/newMessage', methods=['GET','POST'])
-# @login_required
-# def newMessage(itemNum = 0):
-#     print "SEND MESSAGE"
-#     # To change current chat window to another match
-#     # if (request.form.get('index')):
-#     # displayConvo = int(request.form['index'])
-#     displayConvo = request.args.get('indexSend', 0, type=int)
-#     print displayConvo
-#     messageText = request.args.get('messageSend', "", type=str)
-#     print messageText
-#     currMatch = current_user.matches[displayConvo]
-#     currMatch.newMessage(Message(messageText,current_user))
+# AJAX for new chat messages
+@app.route('/newMessage', methods=['GET','POST'])
+@login_required
+def newMessage():
+    message = request.json['message']
+    displayConvo = int(request.json['displayConvo'])
+    currMatch = current_user.matches[displayConvo]
+    currMatch.newMessage(Message(message,current_user))
+    newMsg = currMatch.messages[-1]
+    date = str(newMsg.dateCreated.strftime('%b %d, %Y')) + " at " + str(newMsg.dateCreated.strftime('%-I:%M %p'))
 
-#     newMsg = currMatch.messages[-1]
-#     date = str(message.dateCreated.strftime('%b %d, %Y')) + "at" + str(message.dateCreated.strftime('%-I:%M %p'))
-    
-#     print newMsg
-#     print date
+    return jsonify(result=[date,message])
 
-#     return jsonify(date=date, message=messageText)
-
+# Page to display items
 @app.route("/items", methods=['GET','POST'])
 @app.route("/items/<int:itemNum>", methods=['GET','POST'])
 @login_required
@@ -226,6 +191,7 @@ def items(itemNum = 0):
         # CHANGE THIS TO NOITEMS.HTML
         return render_template('noMatches.html')
 
+# Page for creating an item for current user
 @app.route("/createItem", methods=['GET','POST'])
 @login_required
 def createItem():
@@ -233,12 +199,23 @@ def createItem():
         itemName = request.form['itemName']
         itemPrice = request.form['itemPrice']
         itemTags = request.form['itemTags']
-        newItem = Item(itemName, itemTags, itemPrice)
+        newItem = Item(itemName, itemPrice)
+        # Add tags to item
+        tagToks = re.split('\W+', itemTags)
+        for tag in tagToks:
+            existingTag = Tag.query.filter_by(name=tag).first()
+            if (existingTag != None):
+                newItem.tags.append(existingTag)
+            else:
+                newTag = Tag(tag)
+                newItem.tags.append(newTag)
+        db.session.commit()
         current_user.appendItem(newItem)
         return redirect('/items/' + str(current_user.itemCount-1))
     else:
         return render_template('createItem.html')
 
+# Search page
 @app.route("/search/", methods=['GET','POST'])
 @app.route("/search/<string:searchText>", methods=['GET','POST'])
 @login_required
@@ -280,13 +257,14 @@ def search(searchText=None):
             return render_template('search.html', searchResults=searchResults, lastSearch=searchText, searched=True)
         return render_template('search.html', searchResults=[], searched=False)
 
-
+# test page for AJAX
 @app.route("/matcher/", methods=['GET','POST'])
 @login_required
 def matcher():
     words = ["This","that","the other thing"]
     return render_template("matcher.html", words=words)
 
+# AJAX for test page
 @app.route("/loadMatches/", methods=['GET','POST'])
 @login_required
 def loadMatches():
@@ -339,19 +317,20 @@ class User(db.Model):
     itemCount = db.Column(db.Integer)
     tags = db.relationship("Tag", secondary=userTagTable, back_populates='users')
     items = db.relationship('Item', backref='User', lazy='dynamic')
-    matches = db.relationship("Match", secondary=matchTable, back_populates='party')
+    matches = db.relationship("Match", secondary=matchTable)
     friends = db.relationship('User',
                            secondary=friendship,
                            primaryjoin=id==friendship.c.user_id,
                            secondaryjoin=id==friendship.c.friend_id)
 
-    def __init__(self, email, nickname, password, bio):
+    def __init__(self, email, nickname, password):
         self.email = email
         self.nickname = nickname
         self.password = password
-        self.bio = bio
         self.dateCreated = datetime.utcnow()
         self.active = True
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         return "<User(name='%s', email='%s', password='%s')>" % (
@@ -387,19 +366,29 @@ class User(db.Model):
 
     def match(self, user, item):
         for match in self.matches:
-            if user in match.party:
+            if (user == match.seller):
                 return False
-        matchConvo = Match(item)
-        matchConvo.party = [self, user]
+        newMatch = Match(item)
+        newMatch.seller = user
+        newMatch.buyer = self
+        self.matches.append(newMatch)
+        user.matches.append(newMatch)
         self.updateMatchCount()
         user.updateMatchCount()
         db.session.commit()
 
     def unmatch(self, match):
         if match in self.matches:
-            for user in match.party:
-                user.matches.remove(match)
-                user.updateMatchCount()
+            if self == match.buyer:
+                otherUser = match.seller
+            else:
+                otherUser = match.buyer
+            otherUser.matches.remove(match)
+            self.matches.remove(match)
+        else:
+            return False
+        otherUser.updateMatchCount()
+        self.updateMatchCount()
         db.session.delete(match)
         db.session.commit()
 
@@ -433,6 +422,8 @@ class Item(db.Model):
         self.name = name
         self.price = price
         self.dateCreated = datetime.utcnow()
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         return "<Item(name='%s', tags='%s', price='%s', owner='%d')>" % (
@@ -451,6 +442,8 @@ class Tag(db.Model):
     def __init__(self, name):
         self.name = name.lower()
         self.dateCreated = datetime.utcnow()
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         return "<Tag(id='%d', name='%s')>" % (self.id, self.name)
@@ -460,7 +453,16 @@ class Match(db.Model):
     __tablename__ = 'Match'
 
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    party = db.relationship('User', secondary=matchTable, back_populates='matches')
+
+    seller_id = db.Column(db.Integer, db.ForeignKey('User.id'))
+    buyer_id = db.Column(db.Integer, db.ForeignKey('User.id'))
+
+    seller = db.relationship("User", foreign_keys="Match.seller_id")
+    buyer = db.relationship("User", foreign_keys="Match.buyer_id")
+
+    # seller = db.relationship('User', secondary=matchSellTable, back_populates='sellingMatches')
+    # buyer = db.relationship('User', secondary=matchBuyTable, back_populates='buyingMatches')
+
     items = db.relationship("Item", secondary=matchItems, back_populates='matches')
     messages = db.relationship('Message', backref='Match', lazy='dynamic')
     lastMessage = db.Column(db.String(160))
@@ -470,17 +472,15 @@ class Match(db.Model):
         self.dateCreated = datetime.utcnow()
         self.lastMessage = "Send a message!"
         self.items.append(item)
+        db.session.add(self)
         db.session.commit()
 
     def __repr__(self):
-        userNames = []
         itemNames = []
-        for user in self.party:
-            userNames.append(user.nickname)
         for item in self.items:
             itemNames.append(item.name)
-        return "<Match(\n       id='%d'\n       party='%s'\n       items='%s'\n       numMessages='%d')>" % (
-            self.id, userNames, itemNames, len(self.messages.all()))
+        return "<Match(\n       id='%d'\n       buyer='%s'\n       seller='%s'\n       items='%s'\n       numMessages='%d')>\n" % (
+            self.id, self.buyer.nickname, self.seller.nickname, itemNames, len(self.messages.all()))
 
     def newMessage(self, message):
         self.messages.append(message)
@@ -513,6 +513,8 @@ class Message(db.Model):
         self.text = text
         self.sender = sender.id
         self.dateCreated = datetime.utcnow()
+        db.session.add(self)
+        db.session.commit()
 
 if __name__ == "__main__":
     app.run(port=5000,host="0.0.0.0")

@@ -8,7 +8,6 @@ function editProfInfo () {
 
 function updateProfileToDB () {
 	
-
 	errors = [false,false,false]
 
 	// Validate inputs (email format and size ok, name size ok, interest size ok)
