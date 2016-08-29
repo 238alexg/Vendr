@@ -131,7 +131,7 @@ def loginValidate():
         return jsonify(valid=2)
 
 # Page for user info display
-@app.route("/profile/<int:userid>/", methods=['GET','POST'])
+@app.route("/profile/<int:userid>", methods=['GET','POST'])
 @login_required
 def profile(userid):
     try:
@@ -150,17 +150,44 @@ def profile(userid):
 
 # Page for match chats
 @app.route("/matches", methods=['GET','POST'])
-@app.route("/matches/<string:category>/<int:displayConvo>/", methods=['GET','POST'])
+@app.route("/matches/<string:category>", methods=['GET','POST'])
+@app.route("/matches/<int:displayConvo>", methods=['GET','POST'])
+@app.route("/matches/<string:category>/<int:displayConvo>", methods=['GET','POST'])
 @login_required
 def matches(category="all", displayConvo=0):
-    if (current_user.matchCount != None):
-        if (request.method == 'POST'):
-            # To change current chat window to another match
-            if (request.form.get('index')):
-                displayConvo = int(request.form['index'])
-        return render_template('matches.html', displayConvo=displayConvo, category=category)
-    else:
-        return render_template('noMatches.html')
+    try:
+        hasBuyMatches = False
+        hasSellMatches = False
+        index = 0
+        if (current_user.matchCount != None):
+            if category == "buying":
+                for match in current_user.matches:
+                    if current_user == match.buyer:
+                        displayConvo = index
+                        hasBuyMatches = True
+                        break
+                    index += 1
+            elif category == "selling":
+                for match in current_user.matches:
+                    if current_user == match.seller:
+                        displayConvo = index
+                        hasSellMatches = True
+                        break
+                    index += 1
+            if (request.method == 'POST'):
+                # To change current chat window to another match
+                if (request.form.get('index')):
+                    displayConvo = int(request.form['index'])
+            if (category == "buying") & (hasBuyMatches == False):
+                return render_template('noMatches.html')
+            elif (category == "selling") & (hasSellMatches == False):
+                return render_template('noMatches.html')
+
+            return render_template('matches.html', displayConvo=displayConvo, category=category)
+        else:
+            return render_template('noMatches.html')
+    except BaseException as e:
+        print e
 
 # AJAX for new chat messages
 @app.route('/newMessage', methods=['GET','POST'])
@@ -216,7 +243,7 @@ def createItem():
         return render_template('createItem.html')
 
 # Search page
-@app.route("/search/", methods=['GET','POST'])
+@app.route("/search", methods=['GET','POST'])
 @app.route("/search/<string:searchText>", methods=['GET','POST'])
 @login_required
 def search(searchText=None):
@@ -258,14 +285,14 @@ def search(searchText=None):
         return render_template('search.html', searchResults=[], searched=False)
 
 # test page for AJAX
-@app.route("/matcher/", methods=['GET','POST'])
+@app.route("/matcher", methods=['GET','POST'])
 @login_required
 def matcher():
     words = ["This","that","the other thing"]
     return render_template("matcher.html", words=words)
 
 # AJAX for test page
-@app.route("/loadMatches/", methods=['GET','POST'])
+@app.route("/loadMatches", methods=['GET','POST'])
 @login_required
 def loadMatches():
     print "GOT HERE 2"
@@ -315,9 +342,17 @@ class User(db.Model):
     friendCount = db.Column(db.Integer)
     matchCount = db.Column(db.Integer)
     itemCount = db.Column(db.Integer)
+
     tags = db.relationship("Tag", secondary=userTagTable, back_populates='users')
     items = db.relationship('Item', backref='User', lazy='dynamic')
     matches = db.relationship("Match", secondary=matchTable)
+
+    # buyingMatches_ids = db.Column(db.Integer, db.ForeignKey('Match.id'))
+    # sellingMatches_ids = db.Column(db.Integer, db.ForeignKey('Match.id'))
+
+    # buyingMatches = db.relationship('Match', foreign_keys="[User.buyingMatches_ids]")
+    # sellingMatches = db.relationship('Match', foreign_keys="[User.sellingMatches_ids]")
+
     friends = db.relationship('User',
                            secondary=friendship,
                            primaryjoin=id==friendship.c.user_id,
@@ -454,19 +489,16 @@ class Match(db.Model):
 
     id = db.Column(db.Integer, unique=True, primary_key=True)
 
+    items = db.relationship("Item", secondary=matchItems, back_populates='matches')
+    messages = db.relationship('Message', backref='Match', lazy='dynamic')
+    lastMessage = db.Column(db.String(160))
+    dateCreated = db.Column(db.DateTime)
+
     seller_id = db.Column(db.Integer, db.ForeignKey('User.id'))
     buyer_id = db.Column(db.Integer, db.ForeignKey('User.id'))
 
     seller = db.relationship("User", foreign_keys="Match.seller_id")
     buyer = db.relationship("User", foreign_keys="Match.buyer_id")
-
-    # seller = db.relationship('User', secondary=matchSellTable, back_populates='sellingMatches')
-    # buyer = db.relationship('User', secondary=matchBuyTable, back_populates='buyingMatches')
-
-    items = db.relationship("Item", secondary=matchItems, back_populates='matches')
-    messages = db.relationship('Message', backref='Match', lazy='dynamic')
-    lastMessage = db.Column(db.String(160))
-    dateCreated = db.Column(db.DateTime)
 
     def __init__(self, item):
         self.dateCreated = datetime.utcnow()

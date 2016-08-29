@@ -150,15 +150,15 @@
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for friend in current_user.friends %}
+			        	{%- for friend in current_user.friends -%}
                             <li><a class="niceLinks" href="/profile/{{ friend.id }}">
                                 {% if friend.is_active == True %}
                                     X
                                 {% endif %}
 
-                                {{ friend.nickname }}
+                                {{- friend.nickname -}}
                             </li><br>
-                        {% endfor %}
+                        {%- endfor -%}
 				    </ul>
 			    </div>
 			</td>
@@ -169,15 +169,15 @@
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
-			        	{% for match in current_user.matches %}
+			        	{%- for match in current_user.matches -%}
                             <li>
-                                {% if current_user == match.seller %}
-                                    <a class="niceLinks" style="color:green" href="/matches/{{ loop.index -1 }}">{{match.buyer.nickname}} 
-                                {% else %}
-                                    <a class="niceLinks" style="color:blue" href="/matches/{{ loop.index -1 }}"> {{match.seller.nickname}}
-                                {% endif %}
+                                {%- if current_user == match.seller -%}
+                                    <a class="niceLinks" style="color:green" href="/matches/all/{{ loop.index -1 }}">{{-match.buyer.nickname-}} 
+                                {%- else -%}
+                                    <a class="niceLinks" style="color:blue" href="/matches/all/{{ loop.index -1 }}"> {{-match.seller.nickname-}}
+                                {%- endif -%}
                             </a></li><br>
-                        {% endfor %}
+                        {%- endfor -%}
 				    </ul>
 			    </div>
 			</td>

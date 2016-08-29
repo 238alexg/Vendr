@@ -177,11 +177,10 @@
     <div style="text-align: center;">
         <ul class="tabSlider">
             <li class="liTabItems"><a class="aTabLinks selectedTabItem">All</a></li>
-            <li class="liTabItems"><a class="aTabLinks">Selling</a></li>
             <li class="liTabItems"><a class="aTabLinks">Buying</a></li>
+            <li class="liTabItems"><a class="aTabLinks">Selling</a></li>
         </ul>
     </div>
-
 
     <div class="messagesContainer">
 		<div class="chatSidebar">
@@ -189,59 +188,58 @@
                 <span><input placeholder="Search" type="text"/></span>
             </div>
             <ul id="ul" style="padding=0px; border=0px; bottom: 0px;">
-            {% for match in current_user.matches %}
-                {% if current_user == match.party[0] %}
-                    <h1>SELLER</h1>
-                {% else %}
-                    <h1>BUYER</h1>
-                {% endif %}
-                <form method="post" name="changeChat{{ loop.index -1 }}" id="changeChat">
-                {% if loop.index-1 == displayConvo %}
-                    <li class="matchChat selected">
-                {% else %}
-                    <li onclick="changeChat{{ loop.index -1 }}.submit();" class="matchChat">
-                {% endif %}
-                        <div class="matchChatInside">
-                            <b style="padding: 0 0 5px 0;">
-                                {% for member in match.party %}
-                                    {% if current_user.id != member.id %}
-                                        <a href="/profile/{{ member.id }}">{{ member.nickname }}</a>
-                                    {% endif %}
-                                {% endfor %} : 
-                                {%- for item in match.items -%}
-                                    {% if loop.index > 1 %},{% endif %}
-                                    <a class="itemName" href="/items/{{ item.id }}">
-                                        {{- item.name -}}
-                                    </a>
-                                {%- endfor -%}
-                            </b><br/>
-                            <span style="font-size: 85%;">{{ match.lastMessage }}</span>
-                        </div>
-                    </li>
-                    <input type="hidden" name="index" value="{{ loop.index -1}}">
-                </form>
-            {% endfor %}
+            {% if category == "all" %}
+                {% for match in current_user.matches %}
+                    <form method="post" name="changeChat{{ loop.index -1 }}" id="changeChat">
+                    {% if loop.index-1 == displayConvo %}
+                        <li class="matchChat selected">
+                    {% else %}
+                        <li onclick="changeChat{{ loop.index -1 }}.submit();" class="matchChat">
+                    {% endif %}
+                            <div class="matchChatInside">
+                                <b style="padding: 0 0 5px 0;">
+                                    {% if current_user != match.buyer %}
+                                        <a href="/profile/{{ match.buyer.id }}">{{ match.buyer.nickname }}</a>
+                                    {% else %}
+                                        <a href="/profile/{{ match.seller.id }}">{{ match.seller.nickname }}</a>
+                                    {% endif %} : 
+                                    {%- for item in match.items -%}
+                                        {% if loop.index > 1 %},{% endif %}
+                                        <a class="itemName" href="/items/{{ item.id }}">
+                                            {{- item.name -}}
+                                        </a>
+                                    {%- endfor -%}
+                                </b><br/>
+                                <span style="font-size: 85%;">{{ match.lastMessage }}</span>
+                            </div>
+                        </li>
+                        <input type="hidden" name="index" value="{{ loop.index -1}}">
+                    </form>
+                {% endfor %}
+
+            {% endif %}
             </ul>
         </div>
         <div id="entireChatContainer" style="overflow: hidden; width: auto;">
             <div class="chatHeader">
                 <b>
-                {% for member in current_user.matches[displayConvo].party %}
-                    {% if current_user.id != member.id %}
-                        <a href="/profile/{{ member.id }}">{{ member.nickname }}</a>
-                    {% endif %}
-                {% endfor %} :
-                {%- for item in current_user.matches[displayConvo].items -%}
+                {% set match = current_user.matches[displayConvo] %}
+                {% if current_user != match.buyer %}
+                    <a href="/profile/{{ match.buyer.id }}">{{ match.buyer.nickname }}</a>
+                {% else %}
+                    <a href="/profile/{{ match.seller.id }}">{{ match.seller.nickname }}</a>
+                {% endif %} :
+                {%- for item in match.items -%}
                     {% if loop.index > 1 %},{% endif %}
                     <a class="itemName" href="/items/{{ item.id }}">
                         {{- item.name -}}
                     </a>
-                {%- endfor -%}
+                {% endfor %}
                 </b>
             </div>
             <div id="currentChatContainer" class="currentChatContainer">
                 <ul id="currentChat" class="currentChat">
-                    {% for message in current_user.matches[displayConvo].messages %}
+                    {% for message in match.messages %}
                         {% if message.sender == current_user.id %}
                             <li class="dateCreated self">{{ message.dateCreated.strftime('%b %d, %Y') }} at {{ message.dateCreated.strftime('%-I:%M %p') }}</li>
                             <li class="chatBubble self">
