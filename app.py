@@ -131,7 +131,7 @@ def loginValidate():
         return jsonify(valid=2)
 
 # Page for user info display
-@app.route("/profile/<int:userid>", methods=['GET','POST'])
+@app.route("/profile/<int:userid>/", methods=['GET','POST'])
 @login_required
 def profile(userid):
     try:
