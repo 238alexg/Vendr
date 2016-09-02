@@ -50,47 +50,100 @@
     .searchResult:hover {
         background-color: #FF3333;
     }
-    .profileLink {
-        margin: 0px;
-        display: block;
-        width: 100%;
-        height: inherit;
-    }
-    .button {
-        float: right;
-    }
-    .button:hover {
-        background-color: #FF3333;
-    }
-    input[type=submit] {
-        width: 50px; 
+
+    /* Match swiping buttons */
+    .swipeButton {
+        position: absolute;
+        bottom: 4vw;
+        width: 50px;
         background:inherit;
         font-size: 180%;
-        color: #FFFFFF;
         border:0 none;
         cursor:pointer;
         -webkit-border-radius: 5px;
-        border-radius: 0; 
+        border-radius: 10px; 
     }
-    input[type=submit]:hover {
+    .swipeButton:before {
+        content: ' \25CF';
+    }
+    .swipeButton.left {
+        color: #FF2222;
+    }
+    .left:hover {
         background-color: #FF2222;
+        color: white;
+    }
+    .swipeButton.right {
+        color: #59A562;
+        right: 4.3vw;
+    }
+    .right:hover {
+        background-color: #59A562;
+        color: white;
+    }
+
+    /* Match tile text and containers */
+    .matchTileContainer {
+        margin: auto;
+        color: #FFFFFF;
+        height: 30vw;
+        width: 30vw;
+        background-color: #F25A5A;
+        cursor: pointer;
+        position: relative;
+        text-align: center;
+        border-radius: 15px;
+    }
+    .matchName {
+        padding-top: 1vw;
+        padding-bottom: 1vw;
+        font-size: 2vw;
+        text-align: center;
+    }
+    .matchInfo {
+        border-radius: 10px;
+        text-align: left;
+        margin: auto;
+        background-color: #FF7878;
+        padding: 1.5vw 1vw 0vw 2vw;
+        height: 72%;
+        width: 75%;
+        font-size: 2vw;
+    }
+    .creationDate {
+        position: relative;
+        font-size: 1vw;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="box">
-	<div class="header">Search</div>
+	<div class="header">Make Matches!</div>
 	<hr>
 	<div class="container">
-        <form id="newSearch" method="post">
-        	<input class="inputs" type="text" name="newWord" id="newWord" placeholder="Type a username and press Enter!"><br/>
-            <input type="submit" value="submit" id="send_data" name="send_data">
+        <form id="newMatch" method="post">
+            <div class="matchTileContainer" onclick="">
+                <div class="matchName">
+                    <a style="font-weight:bold;" href="/profile/{{ items[0].owner.id }}">{{ items[0].owner.nickname }}</a>: 
+                    <a style="color:#9AF2A5;" href="/items/{{ items[0].id }}">{{ items[0].name }}</a>
+                </div>
+                <div class="matchInfo">
+                    {{ items[0].price }}
+                    <br/>
+                    {{ items[0].description }}
+                    <br/>
+                    <input type="submit" class="swipeButton left" value="X" id="noMatch" name="noMatch">
+                    <input type="submit" class="swipeButton right" value="$" id="match" name="match">
+                    <input name="indexSend" id="indexSend" type="hidden" value="{{ items[0].id }}"/>
+                </div>
+                <span class="creationDate">
+                    Created on {{ items[0].dateCreated.strftime('%D') }}
+                </span>
+            </div>
         </form>
         <ul class="allResultsContainer" id="resultContainer">
-            {% for word in words %}
-                <li class="searchResult">{{ word }}</li>
-            {% endfor %}
+            <li class="searchResult">Example</li>
         </ul>
 	</div>
 </div>

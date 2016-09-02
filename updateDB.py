@@ -13,10 +13,12 @@ test3 = User("noob@lolz.com","Ima Noob","testtest")
 test4 = User("nerd@u.edu","Nerd Bird","testtest")
 test5 = User("cook@cook.cook","Chef Meats","testtest")
 
-item1 = Item("Books", "$45.00")
-item2 = Item("Ham", "$12.00")
-item3 = Item("Football", "$23.00")
-item4 = Item("Rubbish", "$1.00")
+item1 = Item("Books", "$45.00", test1)
+item2 = Item("Ham", "$12.00", test2)
+item3 = Item("Football", "$23.00", test3)
+item4 = Item("Rubbish", "$1.00", test4)
+item5 = Item("Rubbish1", "$1.00", me)
+item6 = Item("Rubbish2", "$1.00", me)
 
 tag1 = Tag("Learning")
 tag2 = Tag("Sports")
@@ -28,23 +30,17 @@ me.befriend(test3)
 me.befriend(test4)
 me.befriend(test5)
 
-me.appendItem(item1)
-me.appendItem(item2)
-me.appendItem(item3)
+me.match(item1)
+me.match(item2)
+me.match(item3)
 
-me.match(test1, item1)
-me.match(test2, item2)
-me.match(test3, item3)
-
-test1.match(me, item4)
+test1.match(item5)
 
 me.tags.append(tag1)
 me.tags.append(tag2)
 me.tags.append(tag3)
 
 # db.session.commit()
-
-print me.matches
 
 conv1 = me.matches[0]
 

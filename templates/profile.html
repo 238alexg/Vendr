@@ -136,7 +136,7 @@
 		        <div class="blockDropdown">
 			        <ul class="lists">
                         {% for item in current_user.items %}
-                            <li><a class="niceLinks" href="/items/{{ loop.index -1 }}"> {{item.name}} </a></li><br>
+                            <li><a class="niceLinks" href="/items/{{ loop.index -1 }}"> {{-item.name-}} </a></li><br>
                         {% endfor %}
 				    </ul>
 		        </div>
@@ -152,20 +152,16 @@
 			        <ul class="lists">
 			        	{% for friend in current_user.friends %}
                             <li><a class="niceLinks" href="/profile/{{ friend.id }}">
-                                {% if friend.is_active == True %}
-                                    X
-                                {% endif %}
-
-                                {{ friend.nickname }}
-                            </li><br>
-                        {%- endfor -%}
+                                {{- friend.nickname -}}
+                            </a></li><br>
+                        {% endfor %}
 				    </ul>
 			    </div>
 			</td>
 			<td class="tile">
 				<ul class="tileBar">
 		            <li class="navBarHover"><a class="categoryText" href="/matches">Matches ({{current_user.matchCount}})</a></li>
-		            <li class="navBarHover"><a class="add">+</a></li>
+		            <li class="navBarHover"><a class="add" href="/matcher">+</a></li>
 		        </ul>
 		        <div class="blockDropdown">
 			        <ul class="lists">
@@ -173,9 +169,9 @@
                             <li>
                                 {% if current_user == match.seller %}
                                     <a class="niceLinks" style="color:green" href="/matches/all/{{ loop.index -1 }}">{{match.buyer.nickname}} 
-                                {% else %}
+                                {%- else -%}
                                     <a class="niceLinks" style="color:blue" href="/matches/all/{{ loop.index -1 }}"> {{match.seller.nickname}}
-                                {% endif %}
+                                {%- endif -%}
                             </a></li><br>
                         {%- endfor -%}
 				    </ul>

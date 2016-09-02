@@ -138,7 +138,10 @@
         width: 66%;
         text-align: center;
     }
-    .itemName {
+    .sellItemName {
+        color: #7FD2F9;
+    }
+    .buyItemName {
         color: #9AF2A5;
     }
 
@@ -210,14 +213,20 @@
                                 <b style="padding: 0 0 5px 0;">
                                     {% if current_user != match.buyer %}
                                         <a href="/profile/{{ match.buyer.id }}">{{ match.buyer.nickname }}</a>
-                                    {% else %}
+                                    {%- else -%}
                                         <a href="/profile/{{ match.seller.id }}">{{ match.seller.nickname }}</a>
-                                    {% endif %} : 
+                                    {%- endif -%}:&nbsp
                                     {%- for item in match.items -%}
-                                        {% if loop.index > 1 %},{% endif %}
-                                        <a class="itemName" href="/items/{{ item.id }}">
-                                            {{- item.name -}}
-                                        </a>
+                                        {%- if loop.index > 1 -%},&nbsp{%- endif -%}
+                                        {%- if current_user == match.buyer -%}
+                                            <a class="buyItemName" href="/items/{{ item.id }}">
+                                                {{- item.name -}}
+                                            </a>
+                                        {%- else -%}
+                                            <a class="sellItemName" href="/items/{{ item.id }}">
+                                                {{- item.name -}}
+                                            </a>
+                                        {% endif %}
                                     {%- endfor -%}
                                 </b><br/>
                                 <span style="font-size: 85%;">{{ match.lastMessage }}</span>
@@ -240,7 +249,7 @@
                                         <a href="/profile/{{ match.seller.id }}">{{ match.seller.nickname }}</a>: 
                                         {%- for item in match.items -%}
                                             {% if loop.index > 1 %},{% endif %}
-                                            <a class="itemName" href="/items/{{ item.id }}">{{- item.name -}}</a>
+                                            <a class="buyItemName" href="/items/{{ item.id }}">{{- item.name -}}</a>
                                         {%- endfor -%}
                                     </b><br/>
                                     <span style="font-size: 85%;">{{ match.lastMessage }}</span>
@@ -261,10 +270,10 @@
                         {% endif %}
                                 <div class="matchChatInside">
                                     <b style="padding: 0 0 5px 0;">
-                                        <a href="/profile/{{ match.seller.id }}">{{ match.seller.nickname }}</a>: 
+                                        <a href="/profile/{{ match.buyer.id }}">{{ match.buyer.nickname }}</a>: 
                                         {%- for item in match.items -%}
                                             {% if loop.index > 1 %},{% endif %}
-                                            <a class="itemName" href="/items/{{ item.id }}">
+                                            <a class="sellItemName" href="/items/{{ item.id }}">
                                                 {{- item.name -}}
                                             </a>
                                         {%- endfor -%}
@@ -285,14 +294,20 @@
                 {% set match = current_user.matches[displayConvo] %}
                 {% if current_user != match.buyer %}
                     <a href="/profile/{{ match.buyer.id }}">{{ match.buyer.nickname }}</a>
-                {% else %}
+                {%- else -%}
                     <a href="/profile/{{ match.seller.id }}">{{ match.seller.nickname }}</a>
-                {% endif %} :
+                {%- endif -%}:&nbsp
                 {%- for item in match.items -%}
-                    {% if loop.index > 1 %},{% endif %}
-                    <a class="itemName" href="/items/{{ item.id }}">
-                        {{- item.name -}}
-                    </a>
+                    {%- if loop.index > 1 -%},&nbsp{%- endif -%}
+                    {%- if current_user == match.buyer -%}
+                        <a class="buyItemName" href="/items/{{ item.id }}">
+                            {{- item.name -}}
+                        </a>
+                    {%- else -%}
+                        <a class="sellItemName" href="/items/{{ item.id }}">
+                            {{- item.name -}}
+                        </a>
+                    {%- endif -%}
                 {% endfor %}
                 </b>
             </div>

@@ -288,18 +288,32 @@ def search(searchText=None):
 @app.route("/matcher", methods=['GET','POST'])
 @login_required
 def matcher():
-    words = ["This","that","the other thing"]
-    return render_template("matcher.html", words=words)
+    try:
+        items = current_user.items
+        return render_template('matcher.html', items=items)
+    except BaseException as e:
+        print e
+
+# AJAX for new matches
+@app.route('/newMatch', methods=['GET','POST'])
+@login_required
+def newMatch():
+    print "NEW Match!"
+
+    print current_user.matchCount
+    item_id = request.json['item_id']
+    item = Item.query.filter_by(id=item_id).first()
+    current_user.match(item)
+    print current_user.matchCount
+
+    return jsonify(items=current_user.items)      
 
 # AJAX for test page
-@app.route("/loadMatches", methods=['GET','POST'])
+@app.route("/noMatch", methods=['GET','POST'])
 @login_required
-def loadMatches():
-    print "GOT HERE 2"
-    newWord = request.args.get('newWord', "TEST", type=str)
-    print newWord
-    newArray = [newWord, "Billy", "Sandra"]
-    return jsonify(result=newArray)
+def noMatch():
+    print "NO Match!"
+    return jsonify(items=current_user.items)
 
 
 #####################################################
@@ -346,13 +360,6 @@ class User(db.Model):
     tags = db.relationship("Tag", secondary=userTagTable, back_populates='users')
     items = db.relationship('Item', backref='User', lazy='dynamic')
     matches = db.relationship("Match", secondary=matchTable)
-
-    # buyingMatches_ids = db.Column(db.Integer, db.ForeignKey('Match.id'))
-    # sellingMatches_ids = db.Column(db.Integer, db.ForeignKey('Match.id'))
-
-    # buyingMatches = db.relationship('Match', foreign_keys="[User.buyingMatches_ids]")
-    # sellingMatches = db.relationship('Match', foreign_keys="[User.sellingMatches_ids]")
-
     friends = db.relationship('User',
                            secondary=friendship,
                            primaryjoin=id==friendship.c.user_id,
@@ -399,17 +406,22 @@ class User(db.Model):
             friend.updateFriendCount()
             db.session.commit()
 
-    def match(self, user, item):
+    def match(self, item):
+        seller = item.owner
         for match in self.matches:
-            if (user == match.seller):
+            if (seller == match.seller):
+                if (item not in match.items):
+                    match.addItem(item)
+                else:
+                    print "MATCH ITEM EXISTS"
                 return False
         newMatch = Match(item)
-        newMatch.seller = user
+        newMatch.seller = seller
         newMatch.buyer = self
         self.matches.append(newMatch)
-        user.matches.append(newMatch)
+        seller.matches.append(newMatch)
         self.updateMatchCount()
-        user.updateMatchCount()
+        seller.updateMatchCount()
         db.session.commit()
 
     def unmatch(self, match):
@@ -434,12 +446,15 @@ class User(db.Model):
 
     def updateFriendCount(self):
         self.friendCount = len(self.friends)
+        db.session.commit()
 
     def updateMatchCount(self):
         self.matchCount = len(self.matches)
+        db.session.commit()
 
     def updateItemCount(self):
         self.itemCount = len(self.items.all())
+        db.session.commit()
 
 # Items are things Users are selling to other Users
 class Item(db.Model):
@@ -447,21 +462,24 @@ class Item(db.Model):
 
     id = db.Column(db.Integer, unique=True, primary_key=True)
     name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(160), unique=True)
     price = db.Column(db.String(80))
     dateCreated = db.Column(db.DateTime)
-    owner = db.Column(db.Integer, db.ForeignKey('User.id'))
+    owner_id = db.Column(db.Integer, db.ForeignKey('User.id'))
+    owner = db.relationship('User',back_populates='items', foreign_keys="Item.owner_id")
     matches = db.relationship('Match', secondary=matchItems, back_populates='items')
     tags = db.relationship('Tag', secondary=itemTagTable, back_populates='items')
 
-    def __init__(self, name, price):
+    def __init__(self, name, price, owner):
         self.name = name
         self.price = price
         self.dateCreated = datetime.utcnow()
+        self.owner_id = owner.id
         db.session.add(self)
         db.session.commit()
 
     def __repr__(self):
-        return "<Item(name='%s', tags='%s', price='%s', owner='%d')>" % (
+        return "<Item(name='%s', tags='%s', price='%s', owner='%s')>" % (
             self.name, self.tags, self.price, self.owner)
 
 # Tags are relationships for item tags and user interests
