@@ -306,7 +306,15 @@ def newMatch():
     current_user.match(item)
     print current_user.matchCount
 
-    return jsonify(items=current_user.items)      
+    newItem = current_user.items[1]
+    itemInfo = [str(current_user.id), current_user.nickname, str(newItem.id), newItem.name, newItem.price, newItem.description, newItem.dateCreated.strftime('%D')]
+
+    for index, val in enumerate(itemInfo):
+        if val == None:
+            itemInfo[index] = "None"
+
+
+    return jsonify(itemInfo=itemInfo)      
 
 # AJAX for test page
 @app.route("/noMatch", methods=['GET','POST'])
@@ -477,6 +485,7 @@ class Item(db.Model):
         self.owner_id = owner.id
         db.session.add(self)
         db.session.commit()
+        owner.updateItemCount()
 
     def __repr__(self):
         return "<Item(name='%s', tags='%s', price='%s', owner='%s')>" % (
