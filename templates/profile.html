@@ -168,9 +168,9 @@
 			        	{% for match in current_user.matches %}
                             <li>
                                 {% if current_user == match.seller %}
-                                    <a class="niceLinks" style="color:green" href="/matches/all/{{ loop.index -1 }}">{{match.buyer.nickname}} 
+                                    <a class="niceLinks" style="color:#5675AD" href="/matches/all/{{ loop.index -1 }}">{{match.buyer.nickname}} 
                                 {%- else -%}
-                                    <a class="niceLinks" style="color:blue" href="/matches/all/{{ loop.index -1 }}"> {{match.seller.nickname}}
+                                    <a class="niceLinks" style="color:#26AD4F" href="/matches/all/{{ loop.index -1 }}"> {{match.seller.nickname}}
                                 {%- endif -%}
                             </a></li><br>
                         {%- endfor -%}

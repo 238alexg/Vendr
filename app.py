@@ -87,7 +87,7 @@ def login():
                 return redirect('/profile/' + str(newUser.id))
         return render_template('login.html')
     else:
-        return redirect('/profile/' + str(current_user.id))
+        return redirect('/matcher')
 
 # Validate user email availibility on sign up
 @app.route("/emailValidate", methods=['GET','POST'])
@@ -301,18 +301,22 @@ def newMatch():
     print "NEW Match!"
 
     print current_user.matchCount
+
+    # Get matched item ID and actual item object
     item_id = request.json['item_id']
     item = Item.query.filter_by(id=item_id).first()
+    # Match user with item
     current_user.match(item)
+
     print current_user.matchCount
 
+    # Generate new item, get info
     newItem = current_user.items[1]
     itemInfo = [str(current_user.id), current_user.nickname, str(newItem.id), newItem.name, newItem.price, newItem.description, newItem.dateCreated.strftime('%D')]
-
+    # Set empty variables to "None"
     for index, val in enumerate(itemInfo):
         if val == None:
             itemInfo[index] = "None"
-
 
     return jsonify(itemInfo=itemInfo)      
 
@@ -321,7 +325,19 @@ def newMatch():
 @login_required
 def noMatch():
     print "NO Match!"
-    return jsonify(items=current_user.items)
+    # Get new item
+    newItem = current_user.items[1]
+    itemInfo = [str(newItem.owner_id), str(newItem.owner.nickname), str(newItem.id), newItem.name, newItem.price, newItem.description, newItem.dateCreated.strftime('%D')]
+    # Set empty variables to "None"
+    for index, val in enumerate(itemInfo):
+        if val == None:
+            itemInfo[index] = "None"
+        print itemInfo[index]
+    # Return all AJAX data to front end, load new potential match
+    return jsonify(itemInfo=itemInfo) 
+
+# def findNextItem():
+
 
 
 #####################################################
@@ -350,6 +366,13 @@ itemTagTable = db.Table('itemTags',
     db.Column('tag_id', db.Integer, db.ForeignKey('Tag.id'))
 )
 
+swipedItemTable = db.Table('swipedItems',
+    db.Column('date', db.DateTime),
+    db.Column('item_id', db.Integer, db.ForeignKey('Item.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('User.id'))
+)
+    
+
 class User(db.Model):
     __tablename__ = 'User'
 
@@ -367,11 +390,15 @@ class User(db.Model):
 
     tags = db.relationship("Tag", secondary=userTagTable, back_populates='users')
     items = db.relationship('Item', backref='User', lazy='dynamic')
+    swipedItems = db.relationship('Item', 
+        secondary=swipedItemTable,
+        primaryjoin=id==swipedItemTable.c.user_id,
+        secondaryjoin=id==swipedItemTable.c.item_id)
     matches = db.relationship("Match", secondary=matchTable)
     friends = db.relationship('User',
-                           secondary=friendship,
-                           primaryjoin=id==friendship.c.user_id,
-                           secondaryjoin=id==friendship.c.friend_id)
+        secondary=friendship,
+        primaryjoin=id==friendship.c.user_id,
+        secondaryjoin=id==friendship.c.friend_id)
 
     def __init__(self, email, nickname, password):
         self.email = email
@@ -449,6 +476,11 @@ class User(db.Model):
 
     def appendItem(self, item):
         self.items.append(item)
+        self.updateItemCount()
+        db.session.commit()
+
+    def deleteItem(self, item):
+        self.items.remove(item)
         self.updateItemCount()
         db.session.commit()
 
