@@ -116,18 +116,18 @@ def loginValidate():
     password = request.json["password"]
     logUser = User.query.filter_by(email=email).first()
 
-    print email
-    print password
-    print logUser
+    print (email)
+    print (password)
+    print (logUser)
 
     if (logUser == None):
-        print "User not found"
+        print ("User not found")
         return jsonify(valid=0)
     elif (logUser.password != password):
-        print "Passwords don't match"
+        print ("Passwords don't match")
         return jsonify(valid=1)
     else:
-        print "Start of user log in"
+        print ("Start of user log in")
         return jsonify(valid=2)
 
 # Page for user info display
@@ -142,11 +142,10 @@ def profile(userid):
                 print("EDIT PROFILE RECIEVED")
             return render_template('profile.html')
         else:
-            print "GOT HERE BRUH!"
             user = User.query.filter_by(id=userid).first()
             return render_template('otherProfile.html', user=user)
     except BaseException as e:
-        print e
+        print (e)
 
 # Page for match chats
 @app.route("/matches", methods=['GET','POST'])
@@ -187,7 +186,7 @@ def matches(category="all", displayConvo=0):
         else:
             return render_template('noMatches.html')
     except BaseException as e:
-        print e
+        print (e)
 
 # AJAX for new chat messages
 @app.route('/newMessage', methods=['GET','POST'])
@@ -292,15 +291,13 @@ def matcher():
         items = current_user.items
         return render_template('matcher.html', items=items)
     except BaseException as e:
-        print e
+        print (e)
 
 # AJAX for new matches
 @app.route('/newMatch', methods=['GET','POST'])
 @login_required
-def newMatch():
-    print "NEW Match!"
-
-    print current_user.matchCount
+def newMatch():=
+    print (current_user.matchCount)
 
     # Get matched item ID and actual item object
     item_id = request.json['item_id']
@@ -308,7 +305,7 @@ def newMatch():
     # Match user with item
     current_user.match(item)
 
-    print current_user.matchCount
+    print (current_user.matchCount)
 
     # Generate new item, get info
     newItem = current_user.items[1]
@@ -324,7 +321,6 @@ def newMatch():
 @app.route("/noMatch", methods=['GET','POST'])
 @login_required
 def noMatch():
-    print "NO Match!"
     # Get new item
     newItem = current_user.items[1]
     itemInfo = [str(newItem.owner_id), str(newItem.owner.nickname), str(newItem.id), newItem.name, newItem.price, newItem.description, newItem.dateCreated.strftime('%D')]
@@ -332,7 +328,7 @@ def noMatch():
     for index, val in enumerate(itemInfo):
         if val == None:
             itemInfo[index] = "None"
-        print itemInfo[index]
+        print (itemInfo[index])
     # Return all AJAX data to front end, load new potential match
     return jsonify(itemInfo=itemInfo) 
 
@@ -448,7 +444,7 @@ class User(db.Model):
                 if (item not in match.items):
                     match.addItem(item)
                 else:
-                    print "MATCH ITEM EXISTS"
+                    print ("MATCH ITEM EXISTS")
                 return False
         newMatch = Match(item)
         newMatch.seller = seller
