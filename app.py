@@ -296,7 +296,7 @@ def matcher():
 # AJAX for new matches
 @app.route('/newMatch', methods=['GET','POST'])
 @login_required
-def newMatch():=
+def newMatch():
     print (current_user.matchCount)
 
     # Get matched item ID and actual item object
