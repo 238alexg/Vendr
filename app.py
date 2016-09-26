@@ -1,5 +1,10 @@
 #app.py
 
+# MIGRATION
+#   - python app.py db init
+#   - python app.py db migrate
+#   - python app.py db upgrade
+
 import re
 from flask import Flask, render_template, request, url_for, redirect, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -7,15 +12,20 @@ from werkzeug.security import safe_join
 from sqlalchemy.ext.declarative import declarative_base
 from flask.ext.login import LoginManager, login_user, login_required, logout_user, current_user
 from datetime import datetime
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 import uuid
 
 app = Flask(__name__)
-
 app.secret_key = "secrets secrets are no fun"
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+
 db = SQLAlchemy(app)
 db.init_app(app)
+
+migrate = Migrate(app, db)
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
 Base = declarative_base()
 
@@ -224,8 +234,9 @@ def createItem():
     if (request.method == 'POST'):
         itemName = request.form['itemName']
         itemPrice = request.form['itemPrice']
+        itemDesc = request.form['itemDesc']
         itemTags = request.form['itemTags']
-        newItem = Item(itemName, itemPrice)
+        newItem = Item(itemName, itemPrice, itemDesc, current_user)
         # Add tags to item
         tagToks = re.split('\W+', itemTags)
         for tag in tagToks:
@@ -376,7 +387,7 @@ class User(db.Model):
     email = db.Column(db.String(80), unique=True)
     nickname = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(80))
-    bio = db.Column(db.String(120))
+    bio1 = db.Column(db.String(120))
     dateCreated = db.Column(db.DateTime)
     active = db.Column(db.Boolean)
     admin = db.Column(db.Boolean)
@@ -402,6 +413,7 @@ class User(db.Model):
         self.password = password
         self.dateCreated = datetime.utcnow()
         self.active = True
+        self.bio1 = "This is my bio"
         db.session.add(self)
         db.session.commit()
 
@@ -506,10 +518,11 @@ class Item(db.Model):
     matches = db.relationship('Match', secondary=matchItems, back_populates='items')
     tags = db.relationship('Tag', secondary=itemTagTable, back_populates='items')
 
-    def __init__(self, name, price, owner):
+    def __init__(self, name, price, description, owner):
         self.name = name
         self.price = price
         self.dateCreated = datetime.utcnow()
+        self.description = description
         self.owner_id = owner.id
         db.session.add(self)
         db.session.commit()
@@ -604,8 +617,8 @@ class Message(db.Model):
         db.session.commit()
 
 if __name__ == "__main__":
-    app.run()
-
+    # app.run(port=5000,host="0.0.0.0")
+    manager.run()
 
 
 

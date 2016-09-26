@@ -1,9 +1,25 @@
 # update DB
 
+################################################
+#
+# NOW JUST FOR RESETTING THE ENTIRE DB
+#
+# WHICH YOU SHOULD NEVER DO UNLESS
+#
+# THE WORLD IS ENDING AND YOU WANT A THRILL
+#
+################################################
+
 from app import db, User, Item, Match, Message, Tag
 
-db.drop_all()
-db.create_all()
+users = User.query.all()
+items = Item.query.all()
+matches = Match.query.all()
+messages = Message.query.all()
+tags = Tag.query.all()
+
+# db.drop_all()
+# db.create_all()
 
 # test cases
 me = User("me@email.com","Alex","testtest")
